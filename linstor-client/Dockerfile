@@ -16,10 +16,7 @@ RUN apt-get -y update \
  && apt-get -y upgrade \
  && apt-get clean
  
-# Install linstor-server
+# Install linstor-client and tools
 RUN apt-get update \
- && apt-get install -y linstor-server \
+ && apt-get install -y linstor-client drbdtop bash-completion \
  && apt-get clean
-
-WORKDIR "/opt/linstor-server"
-ENTRYPOINT [ "/opt/linstor-server/bin/Controller" ]

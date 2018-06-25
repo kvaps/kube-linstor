@@ -21,5 +21,10 @@ RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean
 
+# Install additional tools
+RUN apt-get update \
+ && apt-get install -y zfsutils-linux \
+ && apt-get clean
+
 WORKDIR "/opt/linstor-server"
-ENTRYPOINT [ "/opt/linstor-server/bin/Controller" ]
+ENTRYPOINT [ "/opt/linstor-server/bin/Satellite" ]

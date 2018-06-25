@@ -16,10 +16,15 @@ RUN apt-get -y update \
  && apt-get -y upgrade \
  && apt-get clean
  
+# Install tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
+
 # Install linstor-server
 RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean
 
-WORKDIR "/opt/linstor-server"
-ENTRYPOINT [ "/opt/linstor-server/bin/Controller" ]
+CMD [ "/opt/linstor-server/bin/Controller" ]

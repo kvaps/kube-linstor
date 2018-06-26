@@ -27,4 +27,5 @@ RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean
 
+WORKDIR "/opt/linstor-server"
 CMD [ "/opt/linstor-server/bin/Controller" ]

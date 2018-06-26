@@ -29,7 +29,7 @@ RUN apt-get update \
 
 # Install additional tools
 RUN apt-get update \
- && apt-get install -y zfsutils-linux \
+ && apt-get install -y kmod zfsutils-linux \
  && apt-get clean
 
 WORKDIR "/opt/linstor-server"

@@ -21,6 +21,7 @@ docker run --net=host --rm -d --name=linstor-satellite --privileged \
 
 # Controller-node
 docker run --net=host --rm -d --name=linstor-controller \
+    -v ${PWD}:/data \
     kvaps/linstor-controller
 
 # Client

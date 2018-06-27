@@ -27,5 +27,13 @@ RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean
 
+# Install postgresql connector
+ENV JDBC_POSTGRESQL_VERSION 42.2.2
+RUN wget -O /opt/linstor-server/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
+      https://jdbc.postgresql.org/download/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
+&& sed -i /opt/linstor-server/bin/* \
+     -e "/^CLASSPATH=\$CLASSPATH/d" \
+     -e "/^CLASSPATH=/aCLASSPATH=\$CLASSPATH:\$APP_HOME/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar"
+
 WORKDIR "/opt/linstor-server"
 CMD [ "/opt/linstor-server/bin/Controller" ]

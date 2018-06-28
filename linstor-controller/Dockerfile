@@ -26,6 +26,7 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean \
+ && mkdir -p /config \
  && ln -sf /config/database.cfg /opt/linstor-server/database.cfg \
  && /opt/linstor-server/bin/linstor-config create-db-file \
       /data/linstordb > /config/database.cfg

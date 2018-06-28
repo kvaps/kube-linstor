@@ -30,7 +30,12 @@ RUN apt-get update \
 # Install additional tools
 RUN apt-get update \
  && apt-get install -y kmod zfsutils-linux \
- && apt-get clean
+ && apt-get download lvm2 \
+ && dpkg --unpack lvm2*.deb \
+ && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \
+ && apt-get -fy install \
+ && apt-get clean \
+ && sed -i 's/\(udev_sync\|udev_rules\) = 1/\1 = 0/' /etc/lvm/lvm.conf
 
 WORKDIR "/opt/linstor-server"
 CMD [ "/opt/linstor-server/bin/Satellite" ]

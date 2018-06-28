@@ -26,8 +26,9 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update \
  && apt-get install -y linstor-server \
  && apt-get clean \
+ && ln -sf /config/database.cfg /opt/linstor-server/database.cfg \
  && /opt/linstor-server/bin/linstor-config create-db-file \
-      /data/linstordb > /opt/linstor-server/database.cfg
+      /data/linstordb > /config/database.cfg
 
 # Install postgresql connector
 ENV JDBC_POSTGRESQL_VERSION 42.2.2

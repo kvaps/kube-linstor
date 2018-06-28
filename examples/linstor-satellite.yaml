@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: linstor-satellite
+spec:
+  selector:
+    matchLabels:
+      app: linstor-satellite
+  template:
+    metadata:
+      labels:
+        app: linstor-satellite
+    spec:
+      nodeSelector:
+        linstor-satellite: ""
+      hostNetwork: true
+      hostPID: true
+      hostIPC: true
+
+      initContainers:
+      - name: init
+        image: kvaps/linstor-satellite:latest
+        securityContext:
+          privileged: true
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+            cp -f /etc/drbd.conf /host-etc/drbd.conf
+            cp -f /etc/drbd.d/global_common.conf /host-etc/drbd.d/global_common.conf
+        volumeMounts:
+        - name: etc
+          mountPath: "/host-etc"
+
+      containers:
+      - name: linstor-satellite
+        image: kvaps/linstor-satellite:latest
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: etc-drbd-conf
+          mountPath: "/etc/drbd.conf"
+        - name: etc-drbd-d
+          mountPath: "/etc/drbd.d"
+        - name: var-lib-drbd
+          mountPath: "/var/lib/drbd"
+        - name: var-lib-drbd-d
+          mountPath: "/var/lib/drbd.d"
+        - name: lib-modules
+          mountPath: "/lib/modules"
+        - name: dev
+          mountPath: "/dev"
+
+      volumes:
+        - name: etc
+          hostPath:
+            path: "/etc"
+        - name: etc-drbd-conf
+          hostPath:
+            path: "/etc/drbd.conf"
+        - name: etc-drbd-d
+          hostPath:
+            path: "/etc/drbd.d"
+        - name: var-lib-drbd
+          hostPath:
+            path: "/var/lib/drbd"
+        - name: var-lib-drbd-d
+          hostPath:
+            path: "/var/lib/drbd.d"
+        - name: lib-modules
+          hostPath:
+            path: "/lib/modules"
+        - name: dev
+          hostPath:
+            path: "/dev"

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linstor-controller
+data:
+  database.cfg: |
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+    <properties>
+      <comment>LinStor database configuration</comment>
+      <entry key="user">linstor</entry>
+      <entry key="password">linstor</entry>
+      <entry key="connection-url">jdbc:postgresql://linstordb/linstor</entry>
+    </properties>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linstor-controller
+  labels:
+    app: linstor-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: linstor-controller
+  template:
+    metadata:
+      labels:
+        app: linstor-controller
+    spec:
+      nodeSelector:
+        linstordb: ""
+
+      containers:
+      - name: linstor-controller
+        image: kvaps/linstor-controller:latest
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: linstor-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: linstor-controller
+spec:
+  ports:
+    - port: 3376
+      targetPort: 3376
+  selector:
+    app: linstor-controller

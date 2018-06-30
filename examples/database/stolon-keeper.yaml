@@ -1,12 +1,13 @@
-apiVersion: apps/v1
-kind: DaemonSet
+# PetSet was renamed to StatefulSet in k8s 1.5
+# apiVersion: apps/v1alpha1
+# kind: PetSet
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: linstordb-keeper
 spec:
-  selector:
-    matchLabels:
-      component: stolon-keeper
-      stolon-cluster: linstordb
+  serviceName: "linstordb-keeper"
+  replicas: 3
   template:
     metadata:
       labels:
@@ -17,8 +18,6 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
-      nodeSelector:
-        linstordb: ""
       terminationGracePeriodSeconds: 10
       containers:
       - name: stolon-keeper
@@ -74,6 +73,13 @@ spec:
         - name: stolon
           secret:
             secretName: linstordb
-        - name: data
-          hostPath:
-            path: /data/local/data/linstordb
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-storage
+      resources:
+        requests:
+          storage: 10Gi

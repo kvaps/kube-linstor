@@ -1,12 +1,9 @@
-apiVersion: apps/v1
-kind: DaemonSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: linstordb-sentinel
 spec:
-  selector:
-    matchLabels:
-      component: stolon-sentinel
-      stolon-cluster: linstordb
+  replicas: 3
   template:
     metadata:
       labels:
@@ -16,8 +13,6 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
-      nodeSelector:
-        linstordb: ""
       containers:
       - name: stolon-sentinel
         image: sorintlab/stolon:master-pg10

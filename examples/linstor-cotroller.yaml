@@ -39,6 +39,16 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        livenessProbe:
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - node
+            - list
+          initialDelaySeconds: 10
+          periodSeconds: 10
       volumes:
         - name: config
           configMap:

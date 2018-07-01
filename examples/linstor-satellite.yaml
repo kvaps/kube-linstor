@@ -26,11 +26,13 @@ spec:
         - "/bin/sh"
         - "-c"
         - |
-            cp -f /etc/drbd.conf /host-etc/drbd.conf
+            cat /etc/drbd.conf > /host-etc/drbd.conf
             cp -f /etc/drbd.d/global_common.conf /host-etc/drbd.d/global_common.conf
         volumeMounts:
-        - name: etc
-          mountPath: "/host-etc"
+        - name: etc-drbd-conf
+          mountPath: "/host-etc/drbd.conf"
+        - name: etc-drbd-d
+          mountPath: "/host-etc/drbd.d"
 
       containers:
       - name: linstor-satellite
@@ -52,12 +54,10 @@ spec:
           mountPath: "/dev"
 
       volumes:
-        - name: etc
-          hostPath:
-            path: "/etc"
         - name: etc-drbd-conf
           hostPath:
             path: "/etc/drbd.conf"
+            type: FileOrCreate
         - name: etc-drbd-d
           hostPath:
             path: "/etc/drbd.d"

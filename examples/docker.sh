@@ -1,5 +1,3 @@
-
-
 # Satelite-node (init-container)
 docker run --net=host --rm \
     -v /etc/:/host-etc \

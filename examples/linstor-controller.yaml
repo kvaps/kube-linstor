@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linstor-controller
+  labels:
+    app: linstor-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: linstor-controller
+  template:
+    metadata:
+      labels:
+        app: linstor-controller
+    spec:
+      nodeSelector:
+        linstordb: ""
+
+      containers:
+      - name: linstor-controller
+        image: kvaps/linstor-controller:latest
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        livenessProbe:
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - node
+            - list
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: linstor-controller
+        - name: data
+          persistentVolumeClaim:
+            claimName: linstordb-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: linstor-controller
+spec:
+  ports:
+    - port: 3376
+      targetPort: 3376
+  selector:
+    app: linstor-controller

@@ -1,6 +1,6 @@
-# Linstor Storage in containers
+# Containerized Linstor Storage
 
-Docker images for run containerized linstor storage cluster in your kubernetes cluster.
+Docker images for run containerized linstor storage in your kubernetes cluster.
 
 ## Images
 

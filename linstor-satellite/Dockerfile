@@ -24,7 +24,7 @@ ENTRYPOINT ["/tini", "--"]
  
 # Install linstor-satellite
 RUN apt-get update \
- && apt-get install -y linstor-satellite \
+ && apt-get install -y linstor-satellite drbd-utils \
  && mkdir -p /config /logs \
  && apt-get clean
 

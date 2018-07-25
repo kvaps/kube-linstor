@@ -22,9 +22,10 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
  
-# Install linstor-server
+# Install linstor-satellite
 RUN apt-get update \
- && apt-get install -y linstor-server \
+ && apt-get install -y linstor-satellite \
+ && mkdir -p /config /logs \
  && apt-get clean
 
 # Install additional tools
@@ -37,5 +38,4 @@ RUN apt-get update \
  && apt-get clean \
  && sed -i 's/\(udev_sync\|udev_rules\) = 1/\1 = 0/' /etc/lvm/lvm.conf
 
-WORKDIR "/opt/linstor-server"
-CMD [ "/opt/linstor-server/bin/Satellite" ]
+CMD [ "/usr/share/linstor-server/bin/Satellite", "--logs=/logs", "--config-directory=/config" ]

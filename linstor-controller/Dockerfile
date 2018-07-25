@@ -22,13 +22,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
-# Install linstor-server
+# Install linstor-controller
 RUN apt-get update \
- && apt-get install -y linstor-server linstor-client \
+ && apt-get install -y linstor-controller linstor-client \
  && apt-get clean \
- && mkdir -p /config \
- && ln -sf /config/database.cfg /opt/linstor-server/database.cfg \
- && /opt/linstor-server/bin/linstor-config create-db-file \
+ && mkdir -p /config /logs \
+ && /usr/share/linstor-server/bin/linstor-config create-db-file \
       /data/linstordb > /config/database.cfg
 
 # Install postgresql connector
@@ -39,5 +38,4 @@ RUN wget -O /opt/linstor-server/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
      -e "/^CLASSPATH=\$CLASSPATH/d" \
      -e "/^CLASSPATH=/aCLASSPATH=\$CLASSPATH:\$APP_HOME/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar"
 
-WORKDIR "/opt/linstor-server"
-CMD [ "/opt/linstor-server/bin/Controller" ]
+CMD [ "/usr/share/linstor-server/bin/Controller", "--logs=/logs", "--config-directory=/config" ]

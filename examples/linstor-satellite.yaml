@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: linstor-satellite
+  namespace: linstor
 spec:
   selector:
     matchLabels:
@@ -26,13 +27,17 @@ spec:
         - "/bin/sh"
         - "-c"
         - |
-            cat /etc/drbd.conf > /host-etc/drbd.conf
-            cp -f /etc/drbd.d/global_common.conf /host-etc/drbd.d/global_common.conf
+            cat /config/drbd.conf > /etc/drbd.conf
+            cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
         volumeMounts:
+        - name: config
+          mountPath: "/config"
         - name: etc-drbd-conf
-          mountPath: "/host-etc/drbd.conf"
+          mountPath: "/etc/drbd.conf"
         - name: etc-drbd-d
-          mountPath: "/host-etc/drbd.d"
+          mountPath: "/etc/drbd.d"
+        - name: usr-local-sbin
+          mountPath: "/host-bin"
 
       containers:
       - name: linstor-satellite
@@ -70,6 +75,39 @@ spec:
         - name: lib-modules
           hostPath:
             path: "/lib/modules"
+        - name: usr-local-sbin
+          hostPath:
+            path: "/usr/local/sbin"
         - name: dev
           hostPath:
             path: "/dev"
+        - name: config
+          configMap:
+            name: drbd-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drbd-config
+  namespace: linstor
+data:
+  drbd.conf: |
+    include "drbd.d/global_common.conf";
+    include "drbd.d/*.res";
+  global_common.conf: |
+    global {
+     usage-count no;
+     udev-always-use-vnr;
+    }
+    common {
+     handlers {
+     }
+     startup {
+     }
+     options {
+     }
+     disk {
+     }
+     net {
+     }
+    }

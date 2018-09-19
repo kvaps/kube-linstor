@@ -1,0 +1,22 @@
+variables:
+  LINSTOR_CONTROLLER_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-controller
+  LINSTOR_SATELLITE_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-satellite
+  LINSTOR_CLIENT_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-client
+
+build_image:
+  stage: build
+  tags: [ "docker" ]
+  script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+
+  - docker build -t LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
+  - docker build -t LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
+  - docker build -t LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
+
+  - docker push LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME
+  - docker push LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME
+  - docker push LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME
+
+  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_CONTROLLER_IMAGE_TAG && docker push $LINSTOR_CONTROLLER_IMAGE_TAG || true"
+  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_SATELLITE_IMAGE_TAG && docker push $LINSTOR_SATELLITE_IMAGE_TAG || true"
+  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_CLIENT_IMAGE_TAG && docker push $LINSTOR_CLIENT_IMAGE_TAG || true"

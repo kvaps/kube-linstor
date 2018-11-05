@@ -44,6 +44,7 @@ spec:
         image: kvaps/linstor-satellite:latest
         securityContext:
           privileged: true
+        terminationMessagePath: /termination-log
         volumeMounts:
         - name: etc-drbd-conf
           mountPath: "/etc/drbd.conf"
@@ -51,8 +52,8 @@ spec:
           mountPath: "/etc/drbd.d"
         - name: var-lib-drbd
           mountPath: "/var/lib/drbd"
-        - name: var-lib-drbd-d
-          mountPath: "/var/lib/drbd.d"
+        - name: var-lib-linstor-d
+          mountPath: "/var/lib/linstor.d"
         - name: lib-modules
           mountPath: "/lib/modules"
         - name: dev
@@ -69,9 +70,9 @@ spec:
         - name: var-lib-drbd
           hostPath:
             path: "/var/lib/drbd"
-        - name: var-lib-drbd-d
+        - name: var-lib-linstor-d
           hostPath:
-            path: "/var/lib/drbd.d"
+            path: "/var/lib/linstor.d"
         - name: lib-modules
           hostPath:
             path: "/lib/modules"

@@ -9,6 +9,8 @@ spec:
   selector:
     matchLabels:
       app: linstor-controller
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:

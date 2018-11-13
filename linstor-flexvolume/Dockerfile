@@ -1,4 +1,5 @@
 FROM golang:latest as builder
+ARG CI_COMMIT_REF_NAME=
 RUN mkdir -p /usr/local/go/src/github.com/LINBIT/ \
  && cd /usr/local/go/src/github.com/LINBIT/ \
  && git clone https://github.com/LINBIT/linstor-flexvolume \
@@ -7,6 +8,7 @@ RUN mkdir -p /usr/local/go/src/github.com/LINBIT/ \
  && mv linstor-flexvolume /
 
 FROM ubuntu:bionic
+ARG CI_COMMIT_REF_NAME=
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade

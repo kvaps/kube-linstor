@@ -1,4 +1,5 @@
 FROM golang:latest as builder
+ARG CI_COMMIT_REF_NAME=
 RUN mkdir -p /usr/local/go/src/github.com/LINBIT/ \
  && curl -L https://github.com/LINBIT/linstor-external-provisioner/archive/master.tar.gz | tar -xzf - -C /usr/local/go/src/github.com/LINBIT/ \
  && mv /usr/local/go/src/github.com/LINBIT/linstor-external-provisioner-master /usr/local/go/src/github.com/LINBIT/linstor-external-provisioner \
@@ -7,6 +8,7 @@ RUN mkdir -p /usr/local/go/src/github.com/LINBIT/ \
  && mv ./linstor-external-provisioner-linux-amd64 /
 
 FROM ubuntu:bionic
+ARG CI_COMMIT_REF_NAME=
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade

@@ -1,4 +1,5 @@
 FROM ubuntu:bionic
+ARG CI_COMMIT_REF_NAME=
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade

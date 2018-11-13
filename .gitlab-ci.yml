@@ -12,20 +12,14 @@ build_image:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
   - docker pull ubuntu:bionic
-  - docker build --no-cache -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
-  - docker build -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
-  - docker build -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
-  - docker build -t $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-external-provisioner
-  - docker build -t $LINSTOR_FLEXVOLUME_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-flexvolume
+  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
+  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
+  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
+  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-external-provisioner
+  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_FLEXVOLUME_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-flexvolume
 
   - docker push $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME
   - docker push $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME
   - docker push $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME
   - docker push $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME
   - docker push $LINSTOR_FLEXVOLUME_IMAGE_TAG:$CI_COMMIT_REF_NAME
-
-  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_CONTROLLER_IMAGE_TAG && docker push $LINSTOR_CONTROLLER_IMAGE_TAG || true"
-  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_SATELLITE_IMAGE_TAG && docker push $LINSTOR_SATELLITE_IMAGE_TAG || true"
-  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_CLIENT_IMAGE_TAG && docker push $LINSTOR_CLIENT_IMAGE_TAG || true"
-  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_PROVISIONER_IMAGE_TAG && docker push $LINSTOR_PROVISIONER_IMAGE_TAG || true"
-  - "[ $CI_COMMIT_REF_NAME == master ] && docker tag $LINSTOR_FLEXVOLUME_IMAGE_TAG:$CI_COMMIT_REF_NAME $LINSTOR_FLEXVOLUME_IMAGE_TAG && docker push $LINSTOR_FLEXVOLUME_IMAGE_TAG || true"

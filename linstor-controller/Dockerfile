@@ -31,10 +31,4 @@ ENV JDBC_POSTGRESQL_VERSION 42.2.2
 RUN wget https://jdbc.postgresql.org/download/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
       -O /usr/share/linstor-server/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar
 
-# Downgrade flyway (https://github.com/LINBIT/linstor-server/issues/34)
-ENV JDBC_FLYWAY_VERSION 5.0.7
-RUN rm -rf /usr/share/linstor-server/lib/flyway-core-* \
- && wget https://repo1.maven.org/maven2/org/flywaydb/flyway-core/${JDBC_FLYWAY_VERSION}/flyway-core-${JDBC_FLYWAY_VERSION}.jar \
-      -O /usr/share/linstor-server/lib/flyway-core-${JDBC_FLYWAY_VERSION}.jar
-
 CMD [ "/usr/share/linstor-server/bin/Controller", "--logs=/logs", "--config-directory=/config" ]

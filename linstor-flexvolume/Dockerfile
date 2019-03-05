@@ -1,11 +1,10 @@
 FROM golang:latest as builder
 ARG CI_COMMIT_REF_NAME=
-RUN mkdir -p /usr/local/go/src/github.com/LINBIT/ \
- && cd /usr/local/go/src/github.com/LINBIT/ \
- && git clone https://github.com/LINBIT/linstor-flexvolume \
+RUN mkdir -p /usr/local/go/src/github.com/kvaps/ \
+ && cd /usr/local/go/src/github.com/kvaps/ \
+ && git clone https://github.com/kvaps/linstor-flexvolume \
  && cd linstor-flexvolume \
- && go build . \
- && mv linstor-flexvolume /
+ && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o /linstor-flexvolume
 
 FROM ubuntu:bionic
 ARG CI_COMMIT_REF_NAME=

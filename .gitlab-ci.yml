@@ -13,6 +13,7 @@ build_image:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
   - docker pull ubuntu:bionic
+  - docker pull golang:latest
   - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
   - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
   - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client

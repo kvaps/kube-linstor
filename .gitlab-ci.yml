@@ -14,11 +14,11 @@ build_image:
 
   - docker pull ubuntu:bionic
   - docker pull golang:latest
-  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
-  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
-  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
-  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-external-provisioner
-  - docker build --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CSI_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-csi
+  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
+  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
+  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
+  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-external-provisioner
+  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CSI_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-csi
 
   - docker push $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME
   - docker push $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME

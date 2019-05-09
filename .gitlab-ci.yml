@@ -10,7 +10,7 @@ build_image:
   stage: build
   tags: [ "docker1" ]
   script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  #- docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
   - docker pull ubuntu:bionic
   - docker pull golang:latest

@@ -58,6 +58,10 @@ spec:
           mountPath: "/lib/modules"
         - name: dev
           mountPath: "/dev"
+        - name: etc-lvm
+          mountPath: "/etc/lvm"
+        - name: run-lock-lvm
+          mountPath: "/run/lock/lvm"
 
       volumes:
         - name: etc-drbd-conf
@@ -82,9 +86,16 @@ spec:
         - name: dev
           hostPath:
             path: "/dev"
+        - name: etc-lvm
+          hostPath:
+            path: "/etc/lvm"
+        - name: run-lock-lvm
+          hostPath:
+            path: "/run/lock/lvm"
         - name: config
           configMap:
             name: drbd-config
+
 ---
 apiVersion: v1
 kind: ConfigMap

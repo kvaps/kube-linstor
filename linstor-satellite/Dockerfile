@@ -26,7 +26,7 @@ RUN apt-get update \
 
 # Install additional tools
 RUN apt-get update \
- && apt-get install -y kmod zfsutils-linux \
+ && apt-get install -y kmod zfsutils-linux thin-provisioning-tools \
  && apt-get download lvm2 \
  && dpkg --unpack lvm2*.deb \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \

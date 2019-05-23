@@ -32,6 +32,9 @@ RUN apt-get update \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \
  && apt-get -fy install \
  && apt-get clean \
- && sed -i 's/\(use_lvmetad\|udev_sync\|udev_rules\) = 1/\1 = 0/' /etc/lvm/lvm.conf
+ && sed -i /etc/lvm/lvm.conf \
+      -e "s/use_lvmetad = 1/use_lvmetad = 0/" \
+      -e "/^ *[^#] *global_filter/d" \
+      -e "/^devices {/a\        global_filter = [ \"r|/dev/drbd.*|\", \"r|/dev/dm-.*|\", \"r|/dev/zd.*|\" ]"
 
 CMD [ "/usr/share/linstor-server/bin/Satellite", "--logs=/logs", "--config-directory=/config" ]

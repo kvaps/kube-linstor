@@ -1,27 +1,13 @@
-variables:
-  LINSTOR_CONTROLLER_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-controller
-  LINSTOR_SATELLITE_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-satellite
-  LINSTOR_CLIENT_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-client
-  LINSTOR_PROVISIONER_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-external-provisioner
-  LINSTOR_FLEXVOLUME_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-flexvolume
-  LINSTOR_CSI_IMAGE_TAG: $CI_REGISTRY_IMAGE/linstor-csi
-
 build_image:
   stage: build
   tags: [ "docker1" ]
+  only:
+    refs:
+    - tags
+    changes:
+    - dockerfiles/**/*
+    - .gitlab-ci.yml
   script:
   #- docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-
-  - docker pull ubuntu:bionic
-  - docker pull golang:latest
-  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-controller
-  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-satellite
-  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-client
-  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-external-provisioner
-  - docker build --no-cache --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME -t $LINSTOR_CSI_IMAGE_TAG:$CI_COMMIT_REF_NAME linstor-csi
-
-  - docker push $LINSTOR_CONTROLLER_IMAGE_TAG:$CI_COMMIT_REF_NAME
-  - docker push $LINSTOR_SATELLITE_IMAGE_TAG:$CI_COMMIT_REF_NAME
-  - docker push $LINSTOR_CLIENT_IMAGE_TAG:$CI_COMMIT_REF_NAME
-  - docker push $LINSTOR_PROVISIONER_IMAGE_TAG:$CI_COMMIT_REF_NAME
-  - docker push $LINSTOR_CSI_IMAGE_TAG:$CI_COMMIT_REF_NAME
+  - dockerfiles/build.sh
+  - dockerfiles/push.sh

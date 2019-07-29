@@ -24,7 +24,7 @@ RUN apt-get update \
  && apt-get clean \
  && mkdir -p /config /logs \
  && /usr/share/linstor-server/bin/linstor-config create-db-file \
-      /data/linstordb > /config/database.cfg
+      /data/linstordb > /config/linstor.toml
 
 # Install postgresql connector
 ENV JDBC_POSTGRESQL_VERSION 42.2.2

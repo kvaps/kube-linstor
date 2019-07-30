@@ -1,53 +1,46 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: linstor-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: linstor-operator
-  template:
-    metadata:
-      labels:
-        name: linstor-operator
-    spec:
-      serviceAccountName: linstor-operator
-      containers:
-        - name: ansible
-          command:
-          - /usr/local/bin/ao-logs
-          - /tmp/ansible-operator/runner
-          - stdout
-          image: "kvaps/linstor-operator:latest"
-          volumeMounts:
-          - mountPath: /tmp/ansible-operator/runner
-            name: runner
-            readOnly: true
-        - name: operator
-          image: "kvaps/linstor-operator:latest"
-          volumeMounts:
-          - mountPath: /tmp/ansible-operator/runner
-            name: runner
-          env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "linstor-operator"
-      volumes:
-        - name: runner
-          emptyDir: {}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: linstor-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: linstor-operator
+rules:
+- apiGroups:
+  - linstor.wedos.org
+  resources:
+  - linstorcontrollers
+  - linstornodes
+  - linstorstoragepools
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - linstor.wedos.org
+  resources:
+  - linstorcontrollers/status
+  - linstornodes/status
+  - linstorstoragepools/status
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: linstor-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: linstor-operator
+subjects:
+- kind: ServiceAccount
+  name: linstor-operator
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -99,51 +92,85 @@ rules:
   - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  creationTimestamp: null
-  name: linstor-operator
-rules:
-- apiGroups:
-  - linstor.wedos.org
-  resources:
-  - linstorcontrollers
-  - linstornodes
-  - linstorstoragepools
-  verbs:
-  - get
-  - watch
-  - list
-- apiGroups:
-  - linstor.wedos.org
-  resources:
-  - linstorcontrollers/status
-  - linstornodes/status
-  - linstorstoragepools/status
-  verbs:
-  - '*'
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: linstor-operator
-subjects:
-- kind: ServiceAccount
-  name: linstor-operator
-  namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: linstor-operator
-  apiGroup: rbac.authorization.k8s.io
----
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: linstor-operator
-subjects:
-- kind: ServiceAccount
-  name: linstor-operator
 roleRef:
+  apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: linstor-operator
-  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: linstor-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linstor-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: linstor-operator
+  template:
+    metadata:
+      labels:
+        name: linstor-operator
+    spec:
+      containers:
+      - args:
+        - /etc/stunnel/stunnel-client.conf
+        image: kvaps/linstor-stunnel:v0.9.13
+        imagePullPolicy: Always
+        name: stunnel
+        ports:
+        - containerPort: 3371
+          name: restapi
+        volumeMounts:
+        - mountPath: /etc/stunnel
+          name: stunnel-config
+      - command:
+        - /usr/local/bin/ao-logs
+        - /tmp/ansible-operator/runner
+        - stdout
+        image: kvaps/linstor-operator:v0.9.13
+        name: ansible
+        volumeMounts:
+        - mountPath: /tmp/ansible-operator/runner
+          name: runner
+          readOnly: true
+      - env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: linstor-operator
+        image: kvaps/linstor-operator:v0.9.13
+        name: operator
+        volumeMounts:
+        - mountPath: /tmp/ansible-operator/runner
+          name: runner
+      imagePullSecrets:
+      - name: regsecret
+      serviceAccountName: linstor-operator
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - emptyDir: {}
+        name: runner
+      - name: stunnel-config
+        projected:
+          sources:
+          - configMap:
+              name: linstor-stunnel
+          - secret:
+              name: linstor-stunnel

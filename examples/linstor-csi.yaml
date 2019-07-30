@@ -393,10 +393,14 @@ spec:
           name: socket-dir
       imagePullSecrets:
       - name: regsecret
-      nodeSelector: {}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
       priorityClassName: system-cluster-critical
       serviceAccount: linstor-csi-controller-sa
-      tolerations: []
       volumes:
       - emptyDir: {}
         name: socket-dir

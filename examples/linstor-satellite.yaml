@@ -1,112 +1,11 @@
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: linstor-satellite
-  namespace: linstor
-spec:
-  selector:
-    matchLabels:
-      app: linstor-satellite
-  template:
-    metadata:
-      labels:
-        app: linstor-satellite
-    spec:
-      nodeSelector:
-        linstor-satellite: ""
-      hostNetwork: true
-      hostPID: true
-      hostIPC: true
-
-      initContainers:
-      - name: init
-        image: kvaps/linstor-satellite:latest
-        securityContext:
-          privileged: true
-        command:
-        - "/bin/sh"
-        - "-c"
-        - |
-            cat /config/drbd.conf > /etc/drbd.conf
-            cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
-        volumeMounts:
-        - name: config
-          mountPath: "/config"
-        - name: etc-drbd-conf
-          mountPath: "/etc/drbd.conf"
-        - name: etc-drbd-d
-          mountPath: "/etc/drbd.d"
-        - name: usr-local-sbin
-          mountPath: "/host-bin"
-
-      containers:
-      - name: linstor-satellite
-        image: kvaps/linstor-satellite:latest
-        securityContext:
-          privileged: true
-        terminationMessagePath: /termination-log
-        volumeMounts:
-        - name: etc-drbd-conf
-          mountPath: "/etc/drbd.conf"
-        - name: etc-drbd-d
-          mountPath: "/etc/drbd.d"
-        - name: var-lib-drbd
-          mountPath: "/var/lib/drbd"
-        - name: var-lib-linstor-d
-          mountPath: "/var/lib/linstor.d"
-        - name: lib-modules
-          mountPath: "/lib/modules"
-        - name: dev
-          mountPath: "/dev"
-        - name: etc-lvm
-          mountPath: "/etc/lvm"
-        - name: run-lock-lvm
-          mountPath: "/run/lock/lvm"
-
-      volumes:
-        - name: etc-drbd-conf
-          hostPath:
-            path: "/etc/drbd.conf"
-            type: FileOrCreate
-        - name: etc-drbd-d
-          hostPath:
-            path: "/etc/drbd.d"
-        - name: var-lib-drbd
-          hostPath:
-            path: "/var/lib/drbd"
-        - name: var-lib-linstor-d
-          hostPath:
-            path: "/var/lib/linstor.d"
-        - name: lib-modules
-          hostPath:
-            path: "/lib/modules"
-        - name: usr-local-sbin
-          hostPath:
-            path: "/usr/local/sbin"
-        - name: dev
-          hostPath:
-            path: "/dev"
-        - name: etc-lvm
-          hostPath:
-            path: "/etc/lvm"
-        - name: run-lock-lvm
-          hostPath:
-            path: "/run/lock/lvm"
-        - name: config
-          configMap:
-            name: drbd-config
-
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: drbd-config
-  namespace: linstor
 data:
-  drbd.conf: |
+  drbd.conf: |+
     include "drbd.d/global_common.conf";
     include "drbd.d/*.res";
-  global_common.conf: |
+
+  global_common.conf: |+
     global {
      usage-count no;
      udev-always-use-vnr;
@@ -123,3 +22,113 @@ data:
      net {
      }
     }
+
+kind: ConfigMap
+metadata:
+  name: linstor-satellite
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: linstor-satellite
+spec:
+  selector:
+    matchLabels:
+      app: linstor-satellite
+  template:
+    metadata:
+      labels:
+        app: linstor-satellite
+    spec:
+      containers:
+      - image: kvaps/linstor-satellite:v0.9.13
+        name: linstor-satellite
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /var/lib/drbd
+          name: var-lib-drbd
+        - mountPath: /var/lib/linstor.d
+          name: var-lib-linstor-d
+        - mountPath: /lib/modules
+          name: lib-modules
+        - mountPath: /dev
+          name: dev
+        - mountPath: /etc/lvm
+          name: etc-lvm
+        - mountPath: /run/lock/lvm
+          name: run-lock-lvm
+        - mountPath: /logs
+          name: logs
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      imagePullSecrets:
+      - name: regsecret
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          cat /config/drbd.conf > /etc/drbd.conf
+          cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
+        image: kvaps/linstor-satellite:v0.9.13
+        name: init
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /host-bin
+          name: usr-local-sbin
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /etc/drbd.conf
+          type: FileOrCreate
+        name: etc-drbd-conf
+      - hostPath:
+          path: /etc/drbd.d
+        name: etc-drbd-d
+      - hostPath:
+          path: /var/lib/drbd
+        name: var-lib-drbd
+      - hostPath:
+          path: /var/lib/linstor.d
+        name: var-lib-linstor-d
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+      - hostPath:
+          path: /usr/local/sbin
+        name: usr-local-sbin
+      - hostPath:
+          path: /dev
+        name: dev
+      - hostPath:
+          path: /etc/lvm
+        name: etc-lvm
+      - hostPath:
+          path: /run/lock/lvm
+        name: run-lock-lvm
+      - configMap:
+          name: linstor-satellite
+        name: config
+      - hostPath:
+          path: /var/log/linstor-satellite
+        name: logs
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 40
+    type: RollingUpdate

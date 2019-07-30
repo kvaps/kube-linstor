@@ -1,22 +1,25 @@
-# Containerized Linstor Storage
+# Kube-Linstor
 
-Docker images for run containerized linstor storage in your kubernetes cluster.
+Containerized Linstor Storage and Operator easy to run in your Kubernetes cluster.
 
 ## Images
 
 
-| Image                    | Build Status                 | Description                                      |
-|--------------------------|------------------------------|--------------------------------------------------|
-| **[linstor-controller]** | ![linstor-controller-status] | linstor-controller daemon with prostgres backend |
-| **[linstor-satellite]**  | ![linstor-satellite-status]  | linstor-satellite daemon with drbd/zfs/lvm tools |
-| **[linstor-client]**     | ![linstor-client-status]     | linstor-client binaries and drbdtop              |
+| Image                    | Build Status                 |
+|--------------------------|------------------------------|
+| **[linstor-controller]** | ![linstor-controller-status] |
+| **[linstor-satellite]**  | ![linstor-satellite-status]  |
+| **[linstor-stunnel]**    | ![linstor-stunnel]           |
+| **[linstor-operator]**   | ![linstor-operator]          |
 
-[linstor-controller]: linstor-controller/Dockerfile
+[linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-status]: https://img.shields.io/docker/build/kvaps/linstor-controller.svg
-[linstor-satellite]: linstor-controller/Dockerfile
+[linstor-satellite]: dockerfiles/linstor-controller/Dockerfile
 [linstor-satellite-status]: https://img.shields.io/docker/build/kvaps/linstor-satellite.svg
-[linstor-client]: linstor-controller/Dockerfile
-[linstor-client-status]: https://img.shields.io/docker/build/kvaps/linstor-client.svg
+[linstor-stunnel]: dockerfiles/linstor-stunnel/Dockerfile
+[linstor-stunnel-status]: https://img.shields.io/docker/build/kvaps/linstor-stunnel.svg
+[linstor-operator]: dockerfiles/linstor-operator/Dockerfile
+[linstor-operator-status]: https://img.shields.io/docker/build/kvaps/linstor-operator.svg
 
 ## Requirements
 
@@ -24,90 +27,145 @@ Docker images for run containerized linstor storage in your kubernetes cluster.
 * DRBD9 kernel module installed on each sattelite node
 * PostgeSQL database or other backing store for redundancy
 
+## Limitations
+
+* Containerized Linstor satellites tested only on Ubuntu and Debian systems.
+
 ## QuckStart
 
-### Simple run
+Linstor consists of several components:
 
-You can test linstor without k8s cluster, check [docker.sh](examples/docker.sh) for more info.
+* **Linstor-controller** - Controller is main control point for Linstor, it provides API for clients and communicates with satellites for creating and monitor DRBD-devices.
+* **Linstor-satellite** - Satellites run on every node, they listen and perform controller tasks. They operates directly with LVM and ZFS subsystems.
+* **Linstor-csi** - CSI driver provides compatibility level for adding Linstor support for Kubernetes
 
-### Controller daemon
+We are also using:
 
-#### Simple solution with backing store
+* **Stunnel** - for encrypt all connections between linstor clients and controller
+* **Linstor-operator** - for automate ususual tasks, eg. create linstor nodes and storage pools
 
-If you already have fault-tolerant storage, you can use it as a backend for linstor-controller's database, which will saved inside the linstor-controller daemon's container.
 
-* This example will deploy **linstor-controller** with local database:
+#### Initial steps
 
-  ```bash
-  kubectl create -f examples/linstor-controller.yaml
+* Create linstor namespace:
+
+  ```
+  kubectl create namespace linstor
   ```
 
-#### Complex solution with PostgreSQL database
+* Initiate stunnel config:
 
-Here we will use [stolon](https://github.com/sorintlab/stolon) and [local-volumes](https://kubernetes.io/blog/2018/04/13/local-persistent-volumes-beta/) feature for create fault-tollerance PostgreSQL database.
-
-* First we should add role and role binding:
-  ```bash
-  kubectl apply -f https://raw.githubusercontent.com/sorintlab/stolon/master/examples/kubernetes/role.yaml
-  kubectl apply -f https://raw.githubusercontent.com/sorintlab/stolon/master/examples/kubernetes/role-binding.yaml
+  ```
+  echo 'linstor:LongAndSecureKeyHere1234512345' > psk.txt
+  kubectl create secret generic --from-file psk.txt linstor-stunnel -n linstor
+  kubectl create secret generic --from-file psk.txt linstor-stunnel -n kube-system
+  kubectl create -f examples/linstor-stunnel.yaml -n linstor
+  kubectl create -f examples/linstor-stunnel.yaml -n kube-system
   ```
 
-* Initialize cluster (Generate specific configmap for stolon)
+#### Database
+
+* Template stolon chart, and apply it:
+
   ```
-  kubectl run -i -t stolonctl --image=sorintlab/stolon:master-pg9.6 --restart=Never --rm -- /usr/local/bin/stolonctl --cluster-name=linstordb --store-backend=kubernetes --kube-resource-kind=configmap init
-  ```
-
-* Then we need to create **local volumes** for **stolon-keeper** daemons.</br>
-  Let's assume that we going to use this three nodes for linstor database: `node1`, `node2` and `node3`.</br>
-  Each one should have created `/data/k8s/linstordb` directory for store postgres data.
-
-* Then we should define this directories as persitentVolumes in our kubernetes cluster:
-
-  ```bash
-  ID=1 NODE=node1 envsubst < examples/linstordb-volume.tpl | kubectl create -f-
-  ID=2 NODE=node2 envsubst < examples/linstordb-volume.tpl | kubectl create -f-
-  ID=3 NODE=node3 envsubst < examples/linstordb-volume.tpl | kubectl create -f-
-  ```
-
-* Now we can create database daemons:
-
-  ```bash
-  kubectl create -f examples/database/
-  ```
-* And database itself:
-
-  ```bash
-  kubectl run -i -t psql --image=sorintlab/stolon:master-pg9.6 --restart=Never --env=PGPASSWORD=linstor --rm /usr/bin/psql -- --host linstordb --port 5432 postgres -U linstor -c 'CREATE DATABASE linstor;'
-  ```
-* Now we ready for deploy **linstor-container**:
-
-  ```bash
-  kubectl create -f examples/linstor-cotroller-psql.yaml
+  helm fetch stable/stolon --untar
+  
+  helm template stolon \
+    --name linstor-db \
+    --namespace linstor \
+    --set superuserPassword=hackme \
+    --set replicationPassword=hackme \
+    --set persistence.enabled=true,persistence.size=10G \
+    --set keeper.replicaCount=3 \
+    --set keeper.nodeSelector.node-role\\.kubernetes\\.io/master= \
+    --set keeper.tolerations[0].effect=NoSchedule,keeper.tolerations[0].key=node-role.kubernetes.io/master \
+    --set proxy.replicaCount=3 \
+    --set proxy.nodeSelector.node-role\\.kubernetes\\.io/master= \
+    --set proxy.tolerations[0].effect=NoSchedule,proxy.tolerations[0].key=node-role.kubernetes.io/master \
+    --set sentinel.replicaCount=3 \
+    --set sentinel.nodeSelector.node-role\\.kubernetes\\.io/master= \
+    --set sentinel.tolerations[0].effect=NoSchedule,sentinel.tolerations[0].key=node-role.kubernetes.io/master \
+    > linstor-db.yaml
+  
+  kubectl create -f linstor-db.yaml -n linstor
   ```
 
-### Satellite daemons
-
-* Before continue, please ensure that you have installed **drbd9** kernel module on each satellite node.
-
-* Apply linstor satellite daemonset:
-
-  ```bash
-  kubectl create -f examples/linstor-satellite.yaml
+* Create Persistent Volumes:
+  ```
+  ID=0 NODE=node1 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
+  ID=1 NODE=node2 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
+  ID=2 NODE=node3 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
   ```
 
-* Then label wanted nodes for run this daemonset:
+* Connect to database:
   ```
-  kubectl label node node{1..10} linstor-satellite=
+  kubectl exec -ti -n linstor linstor-db-stolon-keeper-0 bash
+  PGPASSWORD=$(cat $STKEEPER_PG_SU_PASSWORDFILE) psql -h linstor-db-stolon-proxy -U stolon postgres
+  ```
+  
+* Create user and database for linstor:
+  ```
+  CREATE DATABASE linstor;
+  CREATE USER linstor WITH PASSWORD 'hackme';
+  GRANT ALL PRIVILEGES ON DATABASE linstor TO linstor;
   ```
 
-### Usage
+#### Linstor Controller
 
-* You can access to linstor console from **linstor-controller** container, or run new **linstor-client** for this purpose:
-
-  ```bash
-  kubectl run -i -t linstor-client --image=kvaps/linstor-client --restart=Never --env=LS_CONTROLLERS=linstor-controller --rm /bin/bash
+* Save credentials into secret:
   ```
-* Then read [linstor documentation](https://docs.linbit.com/docs/users-guide-9.0/#_common_administrative_tasks_linstor) for define nodes and new resources.
+  cat > linstor.toml <<\EOT
+  [db]
+    user = "linstor"
+    password = "hackme"
+    connection_url = "jdbc:postgresql://linstor-db-stolon-proxy/linstor"
+  EOT
+  
+  kubectl create secret generic --from-file linstor.toml linstor-controller -n linstor
+  ```
+  
+* Apply Linstor Controller manifest:
+  ```
+  kubectl apply -f examples/linstor-controller.yaml -n linstor
+  ```
+
+#### Linstor Satellites
+
+* Apply Linstor Satellite manifest:
+
+  ```
+  kubectl apply -f examples/linstor-satellite.yaml -n linstor
+  ```
+
+#### Linstor CSI Driver
+
+* Apply Linstor CSI manifest:
+
+  ```
+  kubectl apply -f examples/linstor-csi.yaml -n kube-system
+  ```
+
+  You can find examples for creating StorageClass and PVC in [official linstor-csi repo](https://github.com/LINBIT/linstor-csi/tree/master/examples/k8s)
+
+#### Linstor Operator (optional)
+
+* Apply Linstor Operator manifest:
+
+  ```
+  kubectl apply -f examples/linstor-operator.yaml -n linstor
+  ```
+  
+  You can find examples for creating LinstorController, LinstorNodes and LinstorStoragePools in [examples/linstor-operator-resources.yaml](examples/linstor-operator-resources.yaml)
+
+## Usage
+
+You can get interactive linstor shell by simple exec into **linstor-controller** container:
+
+```
+kubectl exec -ti -n linstor linstor-controller-0 linstor
+```
+
+Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) for define nodes and create new resources.
 
 ## Licenses
 

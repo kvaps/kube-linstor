@@ -1,0 +1,16 @@
+---
+- name: 'linstor controller list-properties'
+  uri:
+    url: 'http://{{ linstor_controller }}/v1/controller/properties'
+  register: controller_properties
+
+- name: 'linstor controller set-properties'
+  uri:
+    url: 'http://{{ linstor_controller }}/v1/controller/properties'
+    method: POST
+    body_format: json
+    status_code: 201
+    body: '{"override_props": {"{{ item.name }}": "{{ item.value }}"}}'
+  when: 'controller_properties.json[item.name] is not defined or controller_properties.json[item.name] != item.value'
+  changed_when: true
+  loop: '{{ properties }}'

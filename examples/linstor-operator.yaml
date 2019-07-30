@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linstor-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: linstor-operator
+  template:
+    metadata:
+      labels:
+        name: linstor-operator
+    spec:
+      serviceAccountName: linstor-operator
+      containers:
+        - name: ansible
+          command:
+          - /usr/local/bin/ao-logs
+          - /tmp/ansible-operator/runner
+          - stdout
+          image: "kvaps/linstor-operator:latest"
+          volumeMounts:
+          - mountPath: /tmp/ansible-operator/runner
+            name: runner
+            readOnly: true
+        - name: operator
+          image: "kvaps/linstor-operator:latest"
+          volumeMounts:
+          - mountPath: /tmp/ansible-operator/runner
+            name: runner
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "linstor-operator"
+      volumes:
+        - name: runner
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: linstor-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: linstor-operator
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - apps
+  resourceNames:
+  - linstor-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - linstor.wedos.org
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: linstor-operator
+rules:
+- apiGroups:
+  - linstor.wedos.org
+  resources:
+  - linstorcontrollers
+  - linstornodes
+  - linstorstoragepools
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - linstor.wedos.org
+  resources:
+  - linstorcontrollers/status
+  - linstornodes/status
+  - linstorstoragepools/status
+  verbs:
+  - '*'
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: linstor-operator
+subjects:
+- kind: ServiceAccount
+  name: linstor-operator
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: linstor-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: linstor-operator
+subjects:
+- kind: ServiceAccount
+  name: linstor-operator
+roleRef:
+  kind: Role
+  name: linstor-operator
+  apiGroup: rbac.authorization.k8s.io

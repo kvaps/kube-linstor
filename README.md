@@ -153,9 +153,10 @@ We are also using:
 
   ```
   kubectl apply -f examples/linstor-operator.yaml -n linstor
+  kubectl apply -f examples/linstor-crd.yaml
   ```
   
-  You can find examples for creating LinstorController, LinstorNodes and LinstorStoragePools in [examples/linstor-operator-resources.yaml](examples/linstor-operator-resources.yaml)
+  You can find examples for creating LinstorController, LinstorNodes and LinstorStoragePools in [examples/linstor-operator-cr.yaml](examples/linstor-operator-cr.yaml)
 
 ## Usage
 

@@ -1,23 +1,21 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: data-linstordb-keeper-${ID}
-  namespace: default
+  name: data-linstor-db-stolon-keeper-${ID}
 spec:
   capacity:
     storage: 10Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /data/k8s/linstordb
+  hostPath:
+    path: /var/lib/linstor-db
+    type: DirectoryOrCreate
   claimRef:
     apiVersion: v1
     kind: PersistentVolumeClaim
-    name: data-linstordb-keeper-${ID}
-    namespace: default
+    name: data-linstor-db-stolon-keeper-${ID}
+    namespace: linstor
   nodeAffinity:
     required:
       nodeSelectorTerms:

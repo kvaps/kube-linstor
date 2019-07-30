@@ -1,0 +1,9 @@
+---
+linstor_controller: "{% if lookup('env','LS_CONTROLLERS') != '' %}{{ lookup('env','LS_CONTROLLERS') }}{% else %}localhost:3370{% endif %}"
+satellite_port: "3366"
+satellite_encryption_type: Plain
+type: Satellite
+
+default_iterface:
+  name: default
+  address: '{{ net_interfaces | selectattr("name", "equalto", "default") | first).address }}'

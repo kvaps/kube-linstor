@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linstor-stunnel
+data:
+  stunnel-client.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK client 1]
+    client = yes
+    accept = 127.0.0.1:3370
+    connect = linstor-controller.linstor:3371
+    PSKsecrets = /etc/stunnel/psk.txt
+  stunnel-server.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK server 1]
+    accept = 0.0.0.0:3371
+    connect = 3370
+    ciphers = PSK
+    PSKsecrets = /etc/stunnel/psk.txt

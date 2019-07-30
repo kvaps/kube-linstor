@@ -1,0 +1,15 @@
+---
+- version: v1beta1
+  group: linstor.wedos.org
+  kind: LinstorNode
+  role: /opt/ansible/roles/linstornode
+
+- version: v1beta1
+  group: linstor.wedos.org
+  kind: LinstorStoragePool
+  role: /opt/ansible/roles/linstorstoragepool
+
+- version: v1beta1
+  group: linstor.wedos.org
+  kind: LinstorController
+  role: /opt/ansible/roles/linstorcontroller

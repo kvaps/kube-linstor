@@ -9,8 +9,8 @@ Containerized Linstor Storage and Operator easy to run in your Kubernetes cluste
 |--------------------------|------------------------------|
 | **[linstor-controller]** | ![linstor-controller-status] |
 | **[linstor-satellite]**  | ![linstor-satellite-status]  |
-| **[linstor-stunnel]**    | ![linstor-stunnel]           |
-| **[linstor-operator]**   | ![linstor-operator]          |
+| **[linstor-stunnel]**    | ![linstor-stunnel-status]    |
+| **[linstor-operator]**   | ![linstor-operator-status]   |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-status]: https://img.shields.io/docker/build/kvaps/linstor-controller.svg

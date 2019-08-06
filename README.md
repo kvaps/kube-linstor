@@ -90,6 +90,8 @@ We are also using:
   kubectl create -f linstor-db.yaml -n linstor
   ```
 
+  **NOTE:** in case of update your stolon add `--set job.autoCreateCluster=false` flag to not reinitialisate your cluster
+
 * Create Persistent Volumes:
   ```
   ID=0 NODE=node1 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -

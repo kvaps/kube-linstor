@@ -64,10 +64,10 @@ spec:
           name: run-lock-lvm
         - mountPath: /logs
           name: logs
-        - mountPath: "/run/lvm/lvmetad.socket"
-          name: run-lvm-lvmetad-socket
-        - mountPath: "/run/udev/control"
-          name: run-udev-control
+        - mountPath: /run/lvm
+          name: run-lvm
+        - mountPath: /run/udev
+          name: run-udev
       hostIPC: true
       hostNetwork: true
       hostPID: true
@@ -133,11 +133,11 @@ spec:
           path: /var/log/linstor-satellite
         name: logs
       - hostPath:
-          path: "/run/lvm/lvmetad.socket"
-        name: run-lvm-lvmetad-socket
+          path: /run/lvm
+        name: run-lvm
       - hostPath:
-            path: "/run/udev/control"
-        name: run-udev-control
+          path: /run/udev
+        name: run-udev
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 40

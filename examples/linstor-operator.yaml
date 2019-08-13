@@ -120,7 +120,7 @@ spec:
       containers:
       - args:
         - /etc/stunnel/stunnel-client.conf
-        image: kvaps/linstor-stunnel:v0.9.13
+        image: kvaps/linstor-stunnel:v1.0.1-1
         imagePullPolicy: Always
         name: stunnel
         ports:
@@ -133,7 +133,7 @@ spec:
         - /usr/local/bin/ao-logs
         - /tmp/ansible-operator/runner
         - stdout
-        image: kvaps/linstor-operator:v0.9.13
+        image: kvaps/linstor-operator:v1.0.1-1
         name: ansible
         volumeMounts:
         - mountPath: /tmp/ansible-operator/runner
@@ -150,7 +150,7 @@ spec:
               fieldPath: metadata.name
         - name: OPERATOR_NAME
           value: linstor-operator
-        image: kvaps/linstor-operator:v0.9.13
+        image: kvaps/linstor-operator:v1.0.1-1
         name: operator
         volumeMounts:
         - mountPath: /tmp/ansible-operator/runner

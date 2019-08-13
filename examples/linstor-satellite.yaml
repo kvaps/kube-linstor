@@ -41,7 +41,7 @@ spec:
         app: linstor-satellite
     spec:
       containers:
-      - image: kvaps/linstor-satellite:v0.9.13
+      - image: kvaps/linstor-satellite:v1.0.1-1
         name: linstor-satellite
         securityContext:
           privileged: true
@@ -80,7 +80,7 @@ spec:
         - |
           cat /config/drbd.conf > /etc/drbd.conf
           cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
-        image: kvaps/linstor-satellite:v0.9.13
+        image: kvaps/linstor-satellite:v1.0.1-1
         name: init
         securityContext:
           privileged: true

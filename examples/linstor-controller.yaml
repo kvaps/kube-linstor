@@ -23,7 +23,7 @@ spec:
         - --logs=/logs
         - --config-directory=/config
         - --rest-bind=127.0.0.1:3370
-        image: kvaps/linstor-controller:v0.9.13
+        image: kvaps/linstor-controller:v1.0.1-1
         imagePullPolicy: Always
         livenessProbe:
           exec:
@@ -43,7 +43,7 @@ spec:
           name: logs
       - args:
         - /etc/stunnel/stunnel-server.conf
-        image: kvaps/linstor-stunnel:v0.9.13
+        image: kvaps/linstor-stunnel:v1.0.1-1
         imagePullPolicy: Always
         name: stunnel
         ports:
@@ -62,7 +62,7 @@ spec:
           echo "setcfgval namespace(netcom) key(PlainConnector/bindaddress) value(127.0.0.1)
           setSecLvl secLvl(NO_SECURITY)
           shutdown" | /usr/share/linstor-server/bin/Controller -d --logs=/logs --config-directory=/config --rest-bind=127.0.0.1:3370
-        image: kvaps/linstor-controller:v0.9.13
+        image: kvaps/linstor-controller:v1.0.1-1
         imagePullPolicy: Always
         name: init
         volumeMounts:

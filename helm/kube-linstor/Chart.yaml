@@ -1,0 +1,15 @@
+name: kube-linstor
+description: Linstor Controller and Satellites for Kubernetes
+version: v1.0.1-1
+keywords:
+  - linstor
+  - drbd
+home: https://github.com/kvaps/kube-linstor
+sources:
+  - https://hub.docker.com/r/kvaps/linstor-controller
+  - https://hub.docker.com/r/kvaps/linstor-satellite
+  - https://hub.docker.com/r/kvaps/linstor-stunnel
+  - https://hub.docker.com/r/kvaps/linstor-operator
+maintainers:
+  - name: kvaps
+    email: kvapss@gmail.com

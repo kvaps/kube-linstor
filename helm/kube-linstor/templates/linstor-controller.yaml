@@ -1,0 +1,125 @@
+{{- if .Values.controller.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: {{ template "linstor.fullname" . }}-controller
+  name: {{ template "linstor.fullname" . }}-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "linstor.fullname" . }}-controller
+  serviceName: {{ template "linstor.fullname" . }}-controller
+  template:
+    metadata:
+      labels:
+        app: {{ template "linstor.fullname" . }}-controller
+    spec:
+      containers:
+      - command:
+        - /tini
+        - --
+        - /usr/share/linstor-server/bin/Controller
+        - --logs=/logs
+        - --config-directory=/config
+        - --rest-bind={{ .Values.controller.restApiBindAddress }}:{{ .Values.controller.restApiBindPort }}
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        livenessProbe:
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - controller
+            - list-properties
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        name: linstor-controller
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /logs
+          name: logs
+      {{- if .Values.stunnel.enabled }}
+      - args:
+        - /etc/stunnel/stunnel-server.conf
+        image: {{ .Values.stunnel.image.repository }}:{{ .Values.stunnel.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        name: stunnel
+        ports:
+        - containerPort: {{ .Values.stunnel.bindPort }}
+          name: ssl
+        volumeMounts:
+        - mountPath: /etc/stunnel
+          name: stunnel-config
+      {{- end }}
+      imagePullSecrets:
+{{ toYaml .Values.controller.image.pullSecrets | indent 8 }}
+      {{- if .Values.controller.initSettings.enabled }}
+      initContainers:
+      - command:
+        - /bin/bash
+        - -c
+        - |-
+          echo "setcfgval namespace(netcom) key(PlainConnector/bindaddress) value({{ .Values.controller.initSettings.plainConnectorBindAddress }})
+          {{- if .Values.controller.initSettings.disableUserSecurity }}
+          setSecLvl secLvl(NO_SECURITY){{ end }}
+          shutdown" | /usr/share/linstor-server/bin/Controller -d --logs=/logs --config-directory=/config --rest-bind={{ .Values.controller.restApiBindAddress }}:{{ .Values.controller.restApiBindPort }}
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        name: init
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /logs
+          name: logs
+      {{- end }}
+{{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.controller.tolerations }}
+      tolerations:
+{{ toYaml . | indent 6 }}
+{{- end }}
+      volumes:
+      - name: config
+        secret:
+          secretName: {{ template "linstor.fullname" . }}-controller
+      {{- if .Values.stunnel.enabled }}
+      - name: stunnel-config
+        projected:
+          sources:
+          - configMap:
+              name: {{ template "linstor.fullname" . }}-stunnel
+          - secret:
+              name: {{ template "linstor.fullname" . }}-stunnel
+      {{- end }}
+      - hostPath:
+          path: /var/log/{{ template "linstor.fullname" . }}-controller
+        name: logs
+---
+apiVersion: v1
+data:
+  linstor.toml: {{ printf "[db]\n  user = \"%s\"\n  password = \"%s\"\n  connection_url = \"%s\"\n" .Values.controller.db.user .Values.controller.db.password .Values.controller.db.connectionUrl | b64enc }}
+kind: Secret
+metadata:
+  name: {{ template "linstor.fullname" . }}-controller
+{{- if .Values.controller.expose }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "linstor.fullname" . }}-controller
+spec:
+  ports:
+  - name: restapi
+    port: {{ .Values.controller.restApiBindPort }}
+    targetPort: {{ .Values.controller.restApiBindPort }}
+  selector:
+    app: {{ template "linstor.fullname" . }}-controller
+{{- end }}
+{{- end }}

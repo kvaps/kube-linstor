@@ -1,0 +1,158 @@
+{{- if .Values.satellite.enabled }}
+{{- if .Values.satellite.overwriteDrbdConf }}
+---
+apiVersion: v1
+data:
+  drbd.conf: |+
+    include "drbd.d/global_common.conf";
+    include "drbd.d/*.res";
+
+  global_common.conf: |+
+    global {
+     usage-count no;
+     udev-always-use-vnr;
+    }
+    common {
+     handlers {
+     }
+     startup {
+     }
+     options {
+     }
+     disk {
+     }
+     net {
+     }
+    }
+
+kind: ConfigMap
+metadata:
+  name: {{ template "linstor.fullname" . }}-satellite
+{{- end }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "linstor.fullname" . }}-satellite
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "linstor.fullname" . }}-satellite
+  template:
+    metadata:
+      labels:
+        app: {{ template "linstor.fullname" . }}-satellite
+    spec:
+      containers:
+      - image: {{ .Values.satellite.image.repository }}:{{ .Values.satellite.image.tag }}
+        imagePullPolicy: {{ .Values.satellite.image.pullPolicy }}
+        name: linstor-satellite
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /var/lib/drbd
+          name: var-lib-drbd
+        - mountPath: /var/lib/linstor.d
+          name: var-lib-linstor-d
+        - mountPath: /lib/modules
+          name: lib-modules
+        - mountPath: /dev
+          name: dev
+        - mountPath: /etc/lvm
+          name: etc-lvm
+        - mountPath: /run/lock/lvm
+          name: run-lock-lvm
+        - mountPath: /logs
+          name: logs
+        - mountPath: /run/lvm
+          name: run-lvm
+        - mountPath: /run/udev
+          name: run-udev
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      imagePullSecrets:
+{{ toYaml .Values.satellite.image.pullSecrets | indent 8 }}
+      {{- if .Values.satellite.overwriteDrbdConf }}
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          cat /config/drbd.conf > /etc/drbd.conf
+          cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
+        image: {{ .Values.satellite.image.repository }}:{{ .Values.satellite.image.tag }}
+        imagePullPolicy: {{ .Values.satellite.image.pullPolicy }}
+        name: init
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /host-bin
+          name: usr-local-sbin
+      {{- end }}
+{{- with .Values.satellite.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.satellite.tolerations }}
+      tolerations:
+{{ toYaml . | indent 6 }}
+{{- end }}
+      volumes:
+      - hostPath:
+          path: /etc/drbd.conf
+          type: FileOrCreate
+        name: etc-drbd-conf
+      - hostPath:
+          path: /etc/drbd.d
+        name: etc-drbd-d
+      - hostPath:
+          path: /var/lib/drbd
+        name: var-lib-drbd
+      - hostPath:
+          path: /var/lib/linstor.d
+        name: var-lib-linstor-d
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+      - hostPath:
+          path: /usr/local/sbin
+        name: usr-local-sbin
+      - hostPath:
+          path: /dev
+        name: dev
+      - hostPath:
+          path: /etc/lvm
+        name: etc-lvm
+      - hostPath:
+          path: /run/lock/lvm
+        name: run-lock-lvm
+      {{- if .Values.satellite.overwriteDrbdConf }}
+      - configMap:
+          name: {{ template "linstor.fullname" . }}-satellite
+        name: config
+      {{- end }}
+      - hostPath:
+          path: /var/log/{{ template "linstor.fullname" . }}-satellite
+        name: logs
+      - hostPath:
+          path: /run/lvm
+        name: run-lvm
+      - hostPath:
+          path: /run/udev
+        name: run-udev
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.satellite.update.maxUnavailable }}
+    type: RollingUpdate
+{{- end }}

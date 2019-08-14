@@ -1,0 +1,82 @@
+{{- if .Values.stunnel.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "linstor.fullname" . }}-stunnel
+data:
+  stunnel-client.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK client 1]
+    client = yes
+    accept = 127.0.0.1:3370
+    connect = {{ template "linstor.fullname" . }}-controller.{{ .Release.Namespace }}:{{ .Values.stunnel.bindPort }}
+    PSKsecrets = /etc/stunnel/psk.txt
+  stunnel-server.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK server 1]
+    accept = 0.0.0.0:{{ .Values.stunnel.bindPort }}
+    connect = {{ .Values.controller.restApiBindPort }}
+    ciphers = PSK
+    PSKsecrets = /etc/stunnel/psk.txt
+---
+apiVersion: v1
+data:
+  psk.txt: {{ if .Values.stunnel.pskPass }}{{ printf "%s:%s" .Values.stunnel.pskUser .Values.stunnel.pskPass | b64enc }}{{ else }}{{ printf "%s:%s" .Values.stunnel.pskUser (randAlphaNum 32) | b64enc }}{{ end }}
+
+kind: Secret
+metadata:
+  name: {{ template "linstor.fullname" . }}-stunnel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "linstor.fullname" . }}-stunnel
+spec:
+  ports:
+  - name: ssl
+    port: {{ .Values.stunnel.bindPort }}
+    targetPort: {{ .Values.stunnel.bindPort }}
+  selector:
+    app: {{ template "linstor.fullname" . }}-stunnel
+{{- if .Values.csi.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "linstor.fullname" . }}-stunnel
+  namespace: kube-system
+data:
+  stunnel-client.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK client 1]
+    client = yes
+    accept = 127.0.0.1:{{ .Values.controller.restApiBindPort }}
+    connect = {{ template "linstor.fullname" . }}-controller.{{ .Release.Namespace }}:{{ .Values.stunnel.bindPort }}
+    PSKsecrets = /etc/stunnel/psk.txt
+  stunnel-server.conf: |+
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK server 1]
+    accept = 0.0.0.0:{{ .Values.stunnel.bindPort }}
+    connect = {{ .Values.controller.restApiBindPort }}
+    ciphers = PSK
+    PSKsecrets = /etc/stunnel/psk.txt
+---
+apiVersion: v1
+data:
+  psk.txt: {{ if .Values.stunnel.pskPass }}{{ printf "%s:%s\n" .Values.stunnel.pskUser .Values.stunnel.pskPass | b64enc }}{{ else }}{{ printf "%s:%s\n" .Values.stunnel.pskUser (randAlphaNum 32) | b64enc }}{{ end }}
+
+kind: Secret
+metadata:
+  name: {{ template "linstor.fullname" . }}-stunnel
+  namespace: kube-system
+{{- end }}
+{{- end }}

@@ -44,25 +44,6 @@ We are also using:
 * **Stunnel** - for encrypt all connections between linstor clients and controller
 * **Linstor-operator** - for automate ususual tasks, eg. create linstor nodes and storage pools
 
-
-#### Initial steps
-
-* Create linstor namespace:
-
-  ```
-  kubectl create namespace linstor
-  ```
-
-* Initiate stunnel config:
-
-  ```
-  echo 'linstor:LongAndSecureKeyHere1234512345' > psk.txt
-  kubectl create secret generic --from-file psk.txt linstor-stunnel -n linstor
-  kubectl create secret generic --from-file psk.txt linstor-stunnel -n kube-system
-  kubectl create -f examples/linstor-stunnel.yaml -n linstor
-  kubectl create -f examples/linstor-stunnel.yaml -n kube-system
-  ```
-
 #### Database
 
 * Template stolon chart, and apply it:
@@ -94,10 +75,32 @@ We are also using:
 
 * Create Persistent Volumes:
   ```
-  ID=0 NODE=node1 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
-  ID=1 NODE=node2 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
-  ID=2 NODE=node3 envsubst < examples/linstor-db-volume.tpl | kubectl create -f -
+  cd helm
+
+  helm template pv-hostpath \
+    --name data-linstor-db-stolon-keeper-0 \
+    --namespace linstor \
+    --set node=node1,path=/var/lib/linstor-db \
+    > pv1.yaml
+
+  helm template pv-hostpath \
+    --name data-linstor-db-stolon-keeper-1 \
+    --namespace linstor \
+    --set node=node2,path=/var/lib/linstor-db \
+    > pv2.yaml
+
+  helm template pv-hostpath \
+    --name data-linstor-db-stolon-keeper-2 \
+    --namespace linstor \
+    --set node=node3,path=/var/lib/linstor-db \
+    > pv3.yaml
+
+  kubectl create -f pv1.yaml -f pv2.yaml -f pv3.yaml
   ```
+
+  Parameters `name` and `namespace` **must match** the PVC's name and namespace of your database, `node` should match exact node name.
+
+  Check your PVC/PV list after creation, if everything right, they should obtain **Bound** status.
 
 * Connect to database:
   ```
@@ -112,53 +115,28 @@ We are also using:
   GRANT ALL PRIVILEGES ON DATABASE linstor TO linstor;
   ```
 
-#### Linstor Controller
+#### Linstor
 
-* Save credentials into secret:
-  ```
-  cat > linstor.toml <<\EOT
-  [db]
-    user = "linstor"
-    password = "hackme"
-    connection_url = "jdbc:postgresql://linstor-db-stolon-proxy/linstor"
-  EOT
-  
-  kubectl create secret generic --from-file linstor.toml linstor-controller -n linstor
-  ```
-  
-* Apply Linstor Controller manifest:
-  ```
-  kubectl apply -f examples/linstor-controller.yaml -n linstor
-  ```
-
-#### Linstor Satellites
-
-* Apply Linstor Satellite manifest:
+* Template kube-linstor chart, and apply it:
 
   ```
-  kubectl apply -f examples/linstor-satellite.yaml -n linstor
+  cd helm
+
+  helm template kube-linstor \
+    --namespace linstor \
+    --set controller.db.user=linstor \
+    --set controller.db.password=hackme \
+    --set controller.db.controller.db.connectionUrl=jdbc:postgresql://linstor-db-stolon-proxy/linstor \
+    --set controller.nodeSelector.node-role\\.kubernetes\\.io/master= \
+    --set controller.tolerations[0].effect=NoSchedule,controller.tolerations[0].key=node-role.kubernetes.io/master \
+    --set satellite.tolerations[0].effect=NoSchedule,satellite.tolerations[0].key=node-role.kubernetes.io/master \
+    --set csi.controller.nodeSelector.node-role\\.kubernetes\\.io/master= \
+    --set csi.controller.tolerations[0].effect=NoSchedule,csi.controller.tolerations[0].key=node-role.kubernetes.io/master \
+    --set csi.node.tolerations[0].effect=NoSchedule,csi.node.tolerations[0].key=node-role.kubernetes.io/master \
+    > linstor.yaml
+
+  kubectl create -f linstor-db.yaml -n linstor
   ```
-
-#### Linstor CSI Driver
-
-* Apply Linstor CSI manifest:
-
-  ```
-  kubectl apply -f examples/linstor-csi.yaml -n kube-system
-  ```
-
-  You can find examples for creating StorageClass and PVC in [official linstor-csi repo](https://github.com/LINBIT/linstor-csi/tree/master/examples/k8s)
-
-#### Linstor Operator (optional)
-
-* Apply Linstor Operator manifest:
-
-  ```
-  kubectl apply -f examples/linstor-operator.yaml -n linstor
-  kubectl apply -f examples/linstor-crd.yaml
-  ```
-  
-  You can find examples for creating LinstorController, LinstorNodes and LinstorStoragePools in [examples/linstor-operator-cr.yaml](examples/linstor-operator-cr.yaml)
 
 ## Usage
 
@@ -172,7 +150,7 @@ Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) 
 
 ## Licenses
 
-* This **docker images** and **manifests** under **[Apache License](LICENSE)**
+* This project under **[Apache License](LICENSE)**
 * **[linstor-server]**, **[drbd]** and **[drbd-utils]** is **GPL** licensed by LINBIT
 
 [linstor-server]: https://github.com/LINBIT/linstor-server/blob/master/COPYING

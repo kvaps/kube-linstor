@@ -12,7 +12,7 @@ data:
     [PSK client 1]
     client = yes
     accept = 127.0.0.1:3370
-    connect = {{ template "linstor.fullname" . }}-controller.{{ .Release.Namespace }}:{{ .Values.stunnel.bindPort }}
+    connect = {{ template "linstor.fullname" . }}-stunnel.{{ .Release.Namespace }}:{{ .Values.stunnel.bindPort }}
     PSKsecrets = /etc/stunnel/psk.txt
   stunnel-server.conf: |+
     foreground = yes

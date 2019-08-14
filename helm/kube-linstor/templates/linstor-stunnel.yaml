@@ -42,7 +42,7 @@ spec:
     port: {{ .Values.stunnel.bindPort }}
     targetPort: {{ .Values.stunnel.bindPort }}
   selector:
-    app: {{ template "linstor.fullname" . }}-stunnel
+    app: {{ template "linstor.fullname" . }}-controller
 {{- if .Values.csi.enabled }}
 ---
 apiVersion: v1

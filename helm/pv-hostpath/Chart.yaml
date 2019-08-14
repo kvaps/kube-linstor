@@ -1,0 +1,5 @@
+name: pv-hostpath
+description: HostPath Physical Volume
+maintainers:
+  - name: kvaps
+    email: kvapss@gmail.com

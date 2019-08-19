@@ -135,7 +135,7 @@ We are also using:
     --set csi.node.tolerations[0].effect=NoSchedule,csi.node.tolerations[0].key=node-role.kubernetes.io/master \
     > linstor.yaml
 
-  kubectl create -f linstor-db.yaml -n linstor
+  kubectl create -f linstor.yaml
   ```
 
 ## Usage

@@ -9,7 +9,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: {{ template "linstor.fullname" . }}-operator
   namespace: {{ .Release.Namespace }}
 rules:
@@ -49,7 +48,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   name: {{ template "linstor.fullname" . }}-operator
   namespace: {{ .Release.Namespace }}
 rules:

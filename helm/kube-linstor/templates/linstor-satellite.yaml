@@ -28,12 +28,14 @@ data:
 kind: ConfigMap
 metadata:
   name: {{ template "linstor.fullname" . }}-satellite
+  namespace: {{ .Release.Namespace }}
 {{- end }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ template "linstor.fullname" . }}-satellite
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:

@@ -6,6 +6,7 @@ metadata:
   labels:
     app: {{ template "linstor.fullname" . }}-controller
   name: {{ template "linstor.fullname" . }}-controller
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -108,12 +109,14 @@ data:
 kind: Secret
 metadata:
   name: {{ template "linstor.fullname" . }}-controller
+  namespace: {{ .Release.Namespace }}
 {{- if .Values.controller.expose }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "linstor.fullname" . }}-controller
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
   - name: restapi

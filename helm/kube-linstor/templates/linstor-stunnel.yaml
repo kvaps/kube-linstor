@@ -4,6 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "linstor.fullname" . }}-stunnel
+  namespace: {{ .Release.Namespace }}
 data:
   stunnel-client.conf: |+
     foreground = yes
@@ -31,11 +32,13 @@ data:
 kind: Secret
 metadata:
   name: {{ template "linstor.fullname" . }}-stunnel
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "linstor.fullname" . }}-stunnel
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
   - name: ssl

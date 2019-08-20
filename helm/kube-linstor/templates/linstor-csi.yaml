@@ -262,7 +262,7 @@ spec:
           {{- if .Values.stunnel.enabled }}
           value: http://localhost:3370
           {{- else }}
-          value: http://{{ template "linstor.fullname" . }}-controller:{{ .Values.controller.restApiBindPort }}
+          value: http://{{ template "linstor.fullname" . }}-controller.{{ .Release.Namespace }}:{{ .Values.controller.restApiBindPort }}
           {{- end }}
         image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
         imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
@@ -409,7 +409,7 @@ spec:
           {{- if .Values.stunnel.enabled }}
           value: http://localhost:3370
           {{- else }}
-          value: http://{{ template "linstor.fullname" . }}-controller:{{ .Values.controller.restApiBindPort }}
+          value: http://{{ template "linstor.fullname" . }}-controller.{{ .Release.Namespace }}:{{ .Values.controller.restApiBindPort }}
           {{- end }}
         image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
         imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}

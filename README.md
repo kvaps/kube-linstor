@@ -126,7 +126,7 @@ We are also using:
     --namespace linstor \
     --set controller.db.user=linstor \
     --set controller.db.password=hackme \
-    --set controller.db.controller.db.connectionUrl=jdbc:postgresql://linstor-db-stolon-proxy/linstor \
+    --set controller.db.connectionUrl=jdbc:postgresql://linstor-db-stolon-proxy/linstor \
     --set controller.nodeSelector.node-role\\.kubernetes\\.io/master= \
     --set controller.tolerations[0].effect=NoSchedule,controller.tolerations[0].key=node-role.kubernetes.io/master \
     --set satellite.tolerations[0].effect=NoSchedule,satellite.tolerations[0].key=node-role.kubernetes.io/master \

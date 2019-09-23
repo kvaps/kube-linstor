@@ -1,4 +1,160 @@
 ---
+# Source: kube-linstor/templates/linstor-satellite.yaml
+
+---
+apiVersion: v1
+data:
+  drbd.conf: |+
+    include "drbd.d/global_common.conf";
+    include "drbd.d/*.res";
+
+  global_common.conf: |+
+    global {
+     usage-count no;
+     udev-always-use-vnr;
+    }
+    common {
+     handlers {
+     }
+     startup {
+     }
+     options {
+     }
+     disk {
+     }
+     net {
+     }
+    }
+
+kind: ConfigMap
+metadata:
+  name: linstor-satellite
+  namespace: linstor
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: linstor-satellite
+  namespace: linstor
+spec:
+  selector:
+    matchLabels:
+      app: linstor-satellite
+  template:
+    metadata:
+      labels:
+        app: linstor-satellite
+    spec:
+      containers:
+      - image: kvaps/linstor-satellite:v1.1.2
+        imagePullPolicy: IfNotPresent
+        name: linstor-satellite
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /var/lib/drbd
+          name: var-lib-drbd
+        - mountPath: /var/lib/linstor.d
+          name: var-lib-linstor-d
+        - mountPath: /lib/modules
+          name: lib-modules
+        - mountPath: /dev
+          name: dev
+        - mountPath: /etc/lvm
+          name: etc-lvm
+        - mountPath: /run/lock/lvm
+          name: run-lock-lvm
+        - mountPath: /logs
+          name: logs
+        - mountPath: /run/lvm
+          name: run-lvm
+        - mountPath: /run/udev
+          name: run-udev
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      imagePullSecrets:
+        - name: regsecret
+        
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          cat /config/drbd.conf > /etc/drbd.conf
+          cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
+        image: kvaps/linstor-satellite:v1.1.2
+        imagePullPolicy: IfNotPresent
+        name: init
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /etc/drbd.conf
+          name: etc-drbd-conf
+        - mountPath: /etc/drbd.d
+          name: etc-drbd-d
+        - mountPath: /host-bin
+          name: usr-local-sbin
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      
+      volumes:
+      - hostPath:
+          path: /etc/drbd.conf
+          type: FileOrCreate
+        name: etc-drbd-conf
+      - hostPath:
+          path: /etc/drbd.d
+        name: etc-drbd-d
+      - hostPath:
+          path: /var/lib/drbd
+        name: var-lib-drbd
+      - hostPath:
+          path: /var/lib/linstor.d
+        name: var-lib-linstor-d
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+      - hostPath:
+          path: /usr/local/sbin
+        name: usr-local-sbin
+      - hostPath:
+          path: /dev
+        name: dev
+      - hostPath:
+          path: /etc/lvm
+        name: etc-lvm
+      - hostPath:
+          path: /run/lock/lvm
+        name: run-lock-lvm
+      - configMap:
+          name: linstor-satellite
+        name: config
+      - hostPath:
+          path: /var/log/linstor-satellite
+        name: logs
+      - hostPath:
+          path: /run/lvm
+        name: run-lvm
+      - hostPath:
+          path: /run/udev
+        name: run-udev
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 40
+    type: RollingUpdate
+
+---
+# Source: kube-linstor/templates/linstor-csi.yaml
+
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -117,6 +273,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: linstor-csi-attacher-role
+
 subjects:
 - kind: ServiceAccount
   name: linstor-csi-controller-sa
@@ -208,13 +365,6 @@ spec:
     spec:
       containers:
       - args:
-        - /etc/stunnel/stunnel-client.conf
-        image: kvaps/linstor-stunnel:v1.1.2
-        name: stunnel
-        volumeMounts:
-        - mountPath: /etc/stunnel
-          name: stunnel-config
-      - args:
         - --v=5
         - --csi-address=$(ADDRESS)
         - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
@@ -254,9 +404,9 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: LINSTOR_IP
-          value: http://localhost:3370
+          value: http://linstor-controller.linstor:3370
         image: quay.io/linbit/linstor-csi:v0.7.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: linstor-csi-plugin
         securityContext:
           allowPrivilegeEscalation: true
@@ -273,10 +423,17 @@ spec:
         - mountPath: /dev
           name: device-dir
       imagePullSecrets:
-      - name: regsecret
+        - name: regsecret
+        
+      nodeSelector:
+        null
+        
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      
       priorityClassName: system-node-critical
       serviceAccount: linstor-csi-node-sa
-      tolerations: []
       volumes:
       - hostPath:
           path: /var/lib/kubelet/plugins_registry/
@@ -293,13 +450,6 @@ spec:
       - hostPath:
           path: /dev
         name: device-dir
-      - name: stunnel-config
-        projected:
-          sources:
-          - configMap:
-              name: linstor-stunnel
-          - secret:
-              name: linstor-stunnel
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -317,20 +467,13 @@ spec:
     spec:
       containers:
       - args:
-        - /etc/stunnel/stunnel-client.conf
-        image: kvaps/linstor-stunnel:v1.1.2
-        name: stunnel
-        volumeMounts:
-        - mountPath: /etc/stunnel
-          name: stunnel-config
-      - args:
         - --csi-address=$(ADDRESS)
         - --v=5
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
         image: quay.io/k8scsi/csi-provisioner:v1.2.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: csi-provisioner
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -342,7 +485,7 @@ spec:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
         image: quay.io/k8scsi/csi-attacher:v1.1.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: csi-attacher
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -354,7 +497,7 @@ spec:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
         image: quay.io/k8scsi/csi-snapshotter:v1.1.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: csi-snapshotter
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -367,6 +510,7 @@ spec:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
         image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
+        imagePullPolicy: IfNotPresent
         name: csi-cluster-driver-registrar
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -384,30 +528,141 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: LINSTOR_IP
-          value: http://localhost:3370
+          value: http://linstor-controller.linstor:3370
         image: quay.io/linbit/linstor-csi:v0.7.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: linstor-csi-plugin
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       imagePullSecrets:
-      - name: regsecret
+        - name: regsecret
+        
       nodeSelector:
         node-role.kubernetes.io/master: ""
+        
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
-        operator: Exists
+      
       priorityClassName: system-cluster-critical
       serviceAccount: linstor-csi-controller-sa
       volumes:
       - emptyDir: {}
         name: socket-dir
-      - name: stunnel-config
-        projected:
-          sources:
-          - configMap:
-              name: linstor-stunnel
-          - secret:
-              name: linstor-stunnel
+
+---
+# Source: kube-linstor/templates/linstor-controller.yaml
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: linstor-controller
+  name: linstor-controller
+  namespace: linstor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: linstor-controller
+  serviceName: linstor-controller
+  template:
+    metadata:
+      labels:
+        app: linstor-controller
+    spec:
+      containers:
+      - command:
+        - /tini
+        - --
+        - /usr/share/linstor-server/bin/Controller
+        - --logs=/logs
+        - --config-directory=/config
+        - --rest-bind=127.0.0.1:3370
+        image: kvaps/linstor-controller:v1.1.2
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - controller
+            - list-properties
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        name: linstor-controller
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /logs
+          name: logs
+      imagePullSecrets:
+        - name: regsecret
+        
+      initContainers:
+      - command:
+        - /bin/bash
+        - -c
+        - |-
+          echo "setcfgval namespace(netcom) key(PlainConnector/bindaddress) value(127.0.0.1)
+          setSecLvl secLvl(NO_SECURITY)
+          shutdown" | /usr/share/linstor-server/bin/Controller -d --logs=/logs --config-directory=/config --rest-bind=127.0.0.1:3370
+        image: kvaps/linstor-controller:v1.1.2
+        imagePullPolicy: IfNotPresent
+        name: init
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /logs
+          name: logs
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+        
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      
+      volumes:
+      - name: config
+        secret:
+          secretName: linstor-controller
+      - hostPath:
+          path: /var/log/linstor-controller
+        name: logs
+---
+apiVersion: v1
+data:
+  linstor.toml: W2RiXQogIHVzZXIgPSAibGluc3RvciIKICBwYXNzd29yZCA9ICJoYWNrbWUiCiAgY29ubmVjdGlvbl91cmwgPSAiamRiYzpoMjovZGF0YS9saW5zdG9yZGIiCg==
+kind: Secret
+metadata:
+  name: linstor-controller
+  namespace: linstor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: linstor-controller
+  namespace: linstor
+spec:
+  ports:
+  - name: restapi
+    port: 3370
+    targetPort: 3370
+  selector:
+    app: linstor-controller
+
+---
+# Source: kube-linstor/templates/linstor-operator-crd.yaml
+
+
+---
+# Source: kube-linstor/templates/linstor-operator.yaml
+
+
+---
+# Source: kube-linstor/templates/linstor-stunnel.yaml
+
+

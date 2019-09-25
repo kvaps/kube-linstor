@@ -243,7 +243,7 @@ rules:
   - update
   - patch
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ template "linstor.fullname" . }}-csi-node
@@ -369,7 +369,7 @@ spec:
               name: linstor-stunnel
       {{- end }}
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "linstor.fullname" . }}-csi-controller

@@ -252,6 +252,7 @@ spec:
   selector:
     matchLabels:
       app: {{ template "linstor.fullname" . }}-csi-node
+      role: linstor-csi
   template:
     metadata:
       labels:
@@ -376,6 +377,10 @@ metadata:
   namespace: kube-system
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "linstor.fullname" . }}-csi-controller
+      role: linstor-csi
   serviceName: linstor-csi
   template:
     metadata:

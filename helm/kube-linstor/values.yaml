@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: kvaps/linstor-controller
-    tag: v1.1.2
+    tag: v1.2.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -55,7 +55,7 @@ stunnel:
   enabled: true
   image:
     repository: kvaps/linstor-stunnel
-    tag: v1.1.2
+    tag: v1.2.0
     pullPolicy: IfNotPresent
 
   bindPort: "3371"
@@ -73,7 +73,7 @@ satellite:
   enabled: true
   image:
     repository: kvaps/linstor-satellite
-    tag: v1.1.2
+    tag: v1.2.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -158,7 +158,7 @@ operator:
   enabled: false
   image:
     repository: kvaps/linstor-operator
-    tag: v1.1.2
+    tag: v1.2.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

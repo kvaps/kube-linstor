@@ -17,7 +17,7 @@ ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
- 
+
 # Install linstor-satellite
 RUN apt-get update \
  && apt-get install -y linstor-satellite drbd-utils \
@@ -26,7 +26,7 @@ RUN apt-get update \
 
 # Install additional tools
 RUN apt-get update \
- && apt-get install -y kmod zfsutils-linux thin-provisioning-tools \
+ && apt-get install -y kmod zfsutils-linux thin-provisioning-tools cryptsetup nvme-cli \
  && apt-get download lvm2 \
  && dpkg --unpack lvm2*.deb \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \

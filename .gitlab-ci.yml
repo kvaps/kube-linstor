@@ -1,4 +1,8 @@
-build_image:
+stages:
+- build
+- push
+
+build:
   stage: build
   tags: [ "docker1" ]
   only:
@@ -11,4 +15,17 @@ build_image:
   - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
   - dockerfiles/build.sh
+
+push:
+  stage: push
+  tags: [ "docker1" ]
+  only:
+    refs:
+    - tags
+    changes:
+    - dockerfiles/**/*
+    - .gitlab-ci.yml
+  before_script:
+  - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
   - dockerfiles/push.sh

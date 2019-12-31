@@ -110,23 +110,19 @@ csi:
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
-      tag: v1.3.0
+      tag: v1.4.0
       pullPolicy: IfNotPresent
     csiAttacher:
       repository: quay.io/k8scsi/csi-attacher
-      tag: v1.1.1
+      tag: v2.0.0
       pullPolicy: IfNotPresent
     csiSnapshotter:
       repository: quay.io/k8scsi/csi-snapshotter
-      tag: v1.1.0
-      pullPolicy: IfNotPresent
-    csiClusterDriverRegistrar:
-      repository: quay.io/k8scsi/csi-cluster-driver-registrar
-      tag: v1.0.1
+      tag: v1.2.2
       pullPolicy: IfNotPresent
     csiNodeDriverRegistrar:
       repository: quay.io/k8scsi/csi-node-driver-registrar
-      tag: v1.1.0
+      tag: v1.2.0
       pullPolicy: IfNotPresent
 
   controller: {

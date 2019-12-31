@@ -5,126 +5,45 @@ kind: ClusterRole
 metadata:
   name: {{ template "linstor.fullname" . }}-csi-attacher-role
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - storage.k8s.io
-  resources:
-  - csinodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - storage.k8s.io
-  resources:
-  - volumeattachments
-  verbs:
-  - get
-  - list
-  - watch
-  - update
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ template "linstor.fullname" . }}-csi-cluster-driver-registrar-role
-rules:
-- apiGroups:
-  - csi.storage.k8s.io
-  resources:
-  - csidrivers
-  verbs:
-  - create
-  - delete
-  - list
-- apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - create
-  - delete
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "linstor.fullname" . }}-csi-provisioner-role
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumeclaims
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - storage.k8s.io
-  resources:
-  - storageclasses
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - list
-  - watch
-  - create
-  - update
-  - patch
-- apiGroups:
-  - snapshot.storage.k8s.io
-  resources:
-  - volumesnapshots
-  verbs:
-  - get
-  - list
-- apiGroups:
-  - snapshot.storage.k8s.io
-  resources:
-  - volumesnapshotcontents
-  verbs:
-  - get
-  - list
-
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
 ---
 
 kind: ClusterRole
@@ -137,7 +56,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "update"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]
@@ -159,6 +78,9 @@ rules:
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["create", "list", "watch", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots/status"]
+    verbs: ["update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -169,19 +91,6 @@ roleRef:
   kind: ClusterRole
   name: {{ template "linstor.fullname" . }}-csi-attacher-role
 
-subjects:
-- kind: ServiceAccount
-  name: {{ template "linstor.fullname" . }}-csi-controller-sa
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ template "linstor.fullname" . }}-csi-cluster-driver-registrar-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: {{ template "linstor.fullname" . }}-csi-cluster-driver-registrar-role
 subjects:
 - kind: ServiceAccount
   name: {{ template "linstor.fullname" . }}-csi-controller-sa
@@ -213,6 +122,19 @@ subjects:
   name: {{ template "linstor.fullname" . }}-csi-controller-sa
   namespace: kube-system
 ---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "linstor.fullname" . }}-csi-snapshotter-binding
+roleRef:
+  kind: ClusterRole
+  name: {{ template "linstor.fullname" . }}-csi-snapshotter-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "linstor.fullname" . }}-csi-controller-sa
+    namespace: kube-system
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -229,19 +151,18 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "linstor.fullname" . }}-csi-driver-registrar-role
-  namespace: kube-system
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: storage.k8s.io/v1beta1
+kind: CSIDriver
+metadata:
+  name: linstor.csi.linbit.com
+spec:
+  attachRequired: true
+  podInfoOnMount: true
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -435,19 +356,6 @@ spec:
         image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}
         name: csi-snapshotter
-        volumeMounts:
-        - mountPath: /var/lib/csi/sockets/pluginproxy/
-          name: socket-dir
-      - args:
-        - --v=5
-        - --pod-info-mount-version="v1"
-        - --csi-address=$(ADDRESS)
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: {{ .Values.csi.image.csiClusterDriverRegistrar.repository }}:{{ .Values.csi.image.csiClusterDriverRegistrar.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiClusterDriverRegistrar.pullPolicy }}
-        name: csi-cluster-driver-registrar
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir

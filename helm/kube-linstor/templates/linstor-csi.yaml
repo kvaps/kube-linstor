@@ -49,7 +49,7 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: linstor-csi-snapshotter-role
+  name: {{ template "linstor.fullname" . }}-csi-snapshotter-role
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]

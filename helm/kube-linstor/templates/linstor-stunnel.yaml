@@ -1,3 +1,4 @@
+{{- $pskKey := include "linstor.pskKey" . -}}
 {{- if .Values.stunnel.enabled }}
 ---
 apiVersion: v1
@@ -27,7 +28,7 @@ data:
 ---
 apiVersion: v1
 data:
-  psk.txt: {{ if .Values.stunnel.pskPass }}{{ printf "%s:%s" .Values.stunnel.pskUser .Values.stunnel.pskPass | b64enc }}{{ else }}{{ printf "%s:%s" .Values.stunnel.pskUser (randAlphaNum 32) | b64enc }}{{ end }}
+  psk.txt: {{ $pskKey | b64enc }}
 
 kind: Secret
 metadata:
@@ -75,7 +76,7 @@ data:
 ---
 apiVersion: v1
 data:
-  psk.txt: {{ if .Values.stunnel.pskPass }}{{ printf "%s:%s\n" .Values.stunnel.pskUser .Values.stunnel.pskPass | b64enc }}{{ else }}{{ printf "%s:%s\n" .Values.stunnel.pskUser (randAlphaNum 32) | b64enc }}{{ end }}
+  psk.txt: {{ $pskKey | b64enc }}
 
 kind: Secret
 metadata:

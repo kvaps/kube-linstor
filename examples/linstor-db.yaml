@@ -1,0 +1,34 @@
+# This is an example values for stolon chart
+#
+# All values described here:
+# https://github.com/helm/charts/blob/master/stable/stolon/values.yaml
+
+superuserPassword: hackme
+replicationPassword: hackme
+persistence:
+  enabled: true
+  size: 10G
+
+keeper:
+  replicaCount: 3
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+
+proxy:
+  replicaCount: 3
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+
+sentinel:
+  replicaCount: 3
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master

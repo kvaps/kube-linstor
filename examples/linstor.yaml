@@ -1,0 +1,32 @@
+# This is an example values for kube-linstor chart
+#
+# All values described here:
+# https://github.com/kvaps/kube-linstor/blob/master/helm/kube-linstor/values.yaml
+
+controller:
+  db:
+    user: linstor
+    password: hackme
+    connectionUrl: jdbc:postgresql://linstor-db-stolon-proxy/linstor
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations: 
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master 
+
+satellite:
+  tolerations: 
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master 
+
+csi:
+  controller:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master 
+  node:
+    tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master 

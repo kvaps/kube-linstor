@@ -44,58 +44,43 @@ We are also using:
 * **Stunnel** - for encrypt all connections between linstor clients and controller
 * **Linstor-operator** - for automate ususual tasks, eg. create linstor nodes and storage pools
 
+
+#### Preparation
+
+[Install Helm](https://helm.sh/docs/intro/) and clone this repository, then cd into it.
+
+> **_NOTE:_**  
+> Commands below provided for Helm v3 but Helm v2 is also supported.  
+> You can use `helm template` instead of `helm install`, this is also working as well.
+
 #### Database
 
-* Template stolon chart, and apply it:
+* Install [stolon](https://github.com/helm/charts/tree/master/stable/stolon) chart:
 
   ```
-  helm fetch stable/stolon --untar
-  
-  helm template stolon \
-    --name linstor-db \
-    --namespace linstor \
-    --set superuserPassword=hackme \
-    --set replicationPassword=hackme \
-    --set persistence.enabled=true,persistence.size=10G \
-    --set keeper.replicaCount=3 \
-    --set keeper.nodeSelector.node-role\\.kubernetes\\.io/master= \
-    --set keeper.tolerations[0].effect=NoSchedule,keeper.tolerations[0].key=node-role.kubernetes.io/master \
-    --set proxy.replicaCount=3 \
-    --set proxy.nodeSelector.node-role\\.kubernetes\\.io/master= \
-    --set proxy.tolerations[0].effect=NoSchedule,proxy.tolerations[0].key=node-role.kubernetes.io/master \
-    --set sentinel.replicaCount=3 \
-    --set sentinel.nodeSelector.node-role\\.kubernetes\\.io/master= \
-    --set sentinel.tolerations[0].effect=NoSchedule,sentinel.tolerations[0].key=node-role.kubernetes.io/master \
-    > linstor-db.yaml
-  
-  kubectl create -f linstor-db.yaml -n linstor
+  helm repo add stable https://kubernetes-charts.storage.googleapis.com
+  helm install linstor-db stable/stolon -f examples/linstor-db.yaml
   ```
 
-  **NOTE:** in case of update your stolon add `--set job.autoCreateCluster=false` flag to not reinitialisate your cluster
+  > **_NOTE:_**  
+  > In case of update your stolon add `--set job.autoCreateCluster=false` flag to not reinitialisate your cluster
 
 * Create Persistent Volumes:
   ```
-  cd helm
-
-  helm template pv-hostpath \
-    --name data-linstor-db-stolon-keeper-0 \
-    --namespace linstor \
+  helm install \
     --set node=node1,path=/var/lib/linstor-db \
-    > pv1.yaml
+    data-linstor-db-stolon-keeper-0 \
+    helm/pv-hostpath
 
-  helm template pv-hostpath \
-    --name data-linstor-db-stolon-keeper-1 \
-    --namespace linstor \
+  helm install \
     --set node=node2,path=/var/lib/linstor-db \
-    > pv2.yaml
+    data-linstor-db-stolon-keeper-1 \
+    helm/pv-hostpath
 
-  helm template pv-hostpath \
-    --name data-linstor-db-stolon-keeper-2 \
-    --namespace linstor \
+  helm install \
     --set node=node3,path=/var/lib/linstor-db \
-    > pv3.yaml
-
-  kubectl create -f pv1.yaml -f pv2.yaml -f pv3.yaml
+    data-linstor-db-stolon-keeper-2 \
+    helm/pv-hostpath
   ```
 
   Parameters `name` and `namespace` **must match** the PVC's name and namespace of your database, `node` should match exact node name.
@@ -117,25 +102,10 @@ We are also using:
 
 #### Linstor
 
-* Template kube-linstor chart, and apply it:
+* Install kube-linstor chart:
 
   ```
-  cd helm
-
-  helm template kube-linstor \
-    --namespace linstor \
-    --set controller.db.user=linstor \
-    --set controller.db.password=hackme \
-    --set controller.db.connectionUrl=jdbc:postgresql://linstor-db-stolon-proxy/linstor \
-    --set controller.nodeSelector.node-role\\.kubernetes\\.io/master= \
-    --set controller.tolerations[0].effect=NoSchedule,controller.tolerations[0].key=node-role.kubernetes.io/master \
-    --set satellite.tolerations[0].effect=NoSchedule,satellite.tolerations[0].key=node-role.kubernetes.io/master \
-    --set csi.controller.nodeSelector.node-role\\.kubernetes\\.io/master= \
-    --set csi.controller.tolerations[0].effect=NoSchedule,csi.controller.tolerations[0].key=node-role.kubernetes.io/master \
-    --set csi.node.tolerations[0].effect=NoSchedule,csi.node.tolerations[0].key=node-role.kubernetes.io/master \
-    > linstor.yaml
-
-  kubectl create -f linstor.yaml
+  helm install -g helm/kube-linstor --namespace linstor -f examples/linstor-db.yaml
   ```
 
 ## Usage

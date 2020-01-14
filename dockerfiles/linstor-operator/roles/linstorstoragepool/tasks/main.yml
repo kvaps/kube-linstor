@@ -96,7 +96,7 @@
     url: 'http://{{ linstor_controller }}/v1/nodes/{{ node_name }}/storage-pools/{{ storage_pool_name }}'
     method: PUT
     body_format: json
-    status_code: 200
+    status_code: 201
     body: '{"override_props": {"{{ item.name }}": "{{ item.value }}"}}'
   when: "(storage_pool_list.json | length == 0 is not defined and item.value not in initial_properties) or
          (storage_pool_list.json | length != 0 and (storage_pool_list.json[0].props is not defined or storage_pool_list.json[0].props[item.name] is not defined or storage_pool_list.json[0].props[item.name] != item.value))"

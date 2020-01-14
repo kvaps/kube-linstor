@@ -49,7 +49,7 @@
     url: 'http://{{ linstor_controller }}/v1/nodes/{{ meta.name }}/net-interfaces/{{ item.name }}'
     method: PUT
     body_format: json
-    status_code: 200
+    status_code: 201
     body: '{"name": "{{ item.name }}", "address": "{{ item.address }}"}'
   when: "filtered_interfaces | length != 0 and filtered_interfaces[0].address != item.address"
   changed_when: true
@@ -62,7 +62,7 @@
     url: 'http://{{ linstor_controller }}/v1/nodes/{{ meta.name }}'
     method: PUT
     body_format: json
-    status_code: 200
+    status_code: 201
     body: '{"override_props": {"{{ item.name }}": "{{ item.value }}"}}'
   when: 'node_info.props is not defined or node_info.props[item.name] is not defined or node_info.props[item.name] != item.value'
   changed_when: true

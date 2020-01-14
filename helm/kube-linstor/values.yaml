@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: kvaps/linstor-controller
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -55,7 +55,7 @@ stunnel:
   enabled: true
   image:
     repository: kvaps/linstor-stunnel
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
 
   bindPort: "3371"
@@ -73,7 +73,7 @@ satellite:
   enabled: true
   image:
     repository: kvaps/linstor-satellite
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -106,15 +106,15 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: quay.io/linbit/linstor-csi
-      tag: v0.7.2
+      tag: v0.7.3
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
-      tag: v1.4.0
+      tag: v1.5.0
       pullPolicy: IfNotPresent
     csiAttacher:
       repository: quay.io/k8scsi/csi-attacher
-      tag: v2.0.0
+      tag: v2.1.0
       pullPolicy: IfNotPresent
     csiSnapshotter:
       repository: quay.io/k8scsi/csi-snapshotter
@@ -154,7 +154,7 @@ operator:
   enabled: false
   image:
     repository: kvaps/linstor-operator
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

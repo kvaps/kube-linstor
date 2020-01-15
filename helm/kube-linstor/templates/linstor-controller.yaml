@@ -36,8 +36,8 @@ spec:
             - linstor
             - controller
             - list-properties
-          initialDelaySeconds: 60
           periodSeconds: 10
+          initialDelaySeconds: 300
         name: linstor-controller
         volumeMounts:
         - mountPath: /config

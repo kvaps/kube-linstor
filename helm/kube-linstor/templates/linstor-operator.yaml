@@ -123,28 +123,8 @@ spec:
         name: {{ template "linstor.fullname" . }}-operator
     spec:
       containers:
-      {{- if .Values.stunnel.enabled }}
-      - args:
-        - /etc/stunnel/stunnel-client.conf
-        image: {{ .Values.stunnel.image.repository }}:{{ .Values.stunnel.image.tag }}
-        imagePullPolicy: {{ .Values.stunnel.image.pullPolicy }}
-        name: stunnel
-        volumeMounts:
-        - mountPath: /etc/stunnel
-          name: stunnel-config
-      {{- end }}
-      - command:
-        - /usr/local/bin/ao-logs
-        - /tmp/ansible-operator/runner
-        - stdout
-        image: {{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}
-        imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
-        name: ansible
-        volumeMounts:
-        - mountPath: /tmp/ansible-operator/runner
-          name: runner
-          readOnly: true
-      - env:
+      - args: [ '--max-workers={{ .Values.operator.workers }}' ]
+        env:
         - name: LS_CONTROLLERS
           {{- if .Values.stunnel.enabled }}
           value: localhost:3370
@@ -161,11 +141,18 @@ spec:
               fieldPath: metadata.name
         - name: OPERATOR_NAME
           value: linstor-operator
-        image: {{ .Values.operator.image.repository }}:{{ .Values.stunnel.image.tag }}
+        image: {{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}
         name: operator
+      {{- if .Values.stunnel.enabled }}
+      - args:
+        - /etc/stunnel/stunnel-client.conf
+        image: {{ .Values.stunnel.image.repository }}:{{ .Values.stunnel.image.tag }}
+        imagePullPolicy: {{ .Values.stunnel.image.pullPolicy }}
+        name: stunnel
         volumeMounts:
-        - mountPath: /tmp/ansible-operator/runner
-          name: runner
+        - mountPath: /etc/stunnel
+          name: stunnel-config
+      {{- end }}
       imagePullSecrets:
 {{ toYaml .Values.operator.image.pullSecrets | indent 8 }}
       serviceAccountName: {{ template "linstor.fullname" . }}-operator
@@ -177,10 +164,8 @@ spec:
       tolerations:
 {{ toYaml . | indent 6 }}
 {{- end }}
-      volumes:
-      - emptyDir: {}
-        name: runner
       {{- if .Values.stunnel.enabled }}
+      volumes:
       - name: stunnel-config
         projected:
           sources:

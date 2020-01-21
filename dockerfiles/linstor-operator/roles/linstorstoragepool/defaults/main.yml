@@ -1,2 +1,0 @@
----
-linstor_controller: "{% if lookup('env','LS_CONTROLLERS') != '' %}{{ lookup('env','LS_CONTROLLERS') }}{% else %}localhost:3370{% endif %}"

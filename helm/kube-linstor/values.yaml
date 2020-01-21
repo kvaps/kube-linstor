@@ -144,27 +144,3 @@ csi:
     #     operator: Exists
     #     effect: NoSchedule
   }
-
-# ------------------------------------------------------------------------------
-# Linstor-operator allows to automate ususual tasks, eg. create linstor nodes
-# configure controller options and storage pools
-# ------------------------------------------------------------------------------
-
-operator:
-  enabled: false
-  image:
-    repository: kvaps/linstor-operator
-    tag: v1.3.0
-    pullPolicy: IfNotPresent
-    pullSecrets:
-      - name: regsecret
-
-  workers: 10
-
-  # nodeSelector:
-  #   node-role.kubernetes.io/master: ""
-  
-  # tolerations:
-  #   - key: node-role.kubernetes.io/master
-  #     operator: Exists
-  #     effect: NoSchedule

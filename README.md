@@ -1,6 +1,6 @@
 # Kube-Linstor
 
-Containerized Linstor Storage and Operator easy to run in your Kubernetes cluster.
+Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 ## Images
 
@@ -10,7 +10,6 @@ Containerized Linstor Storage and Operator easy to run in your Kubernetes cluste
 | **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
 | **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
 | **[linstor-stunnel]**    | [![linstor-stunnel-status]](https://hub.docker.com/r/kvaps/linstor-stunnel)       |
-| **[linstor-operator]**   | [![linstor-operator-status]](https://hub.docker.com/r/kvaps/linstor-operator)     |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-controller.svg
@@ -18,8 +17,6 @@ Containerized Linstor Storage and Operator easy to run in your Kubernetes cluste
 [linstor-satellite-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-satellite.svg
 [linstor-stunnel]: dockerfiles/linstor-stunnel/Dockerfile
 [linstor-stunnel-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-stunnel.svg
-[linstor-operator]: dockerfiles/linstor-operator/Dockerfile
-[linstor-operator-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-operator.svg
 
 ## Requirements
 
@@ -42,7 +39,6 @@ Linstor consists of several components:
 We are also using:
 
 * **Stunnel** - for encrypt all connections between linstor clients and controller
-* **Linstor-operator** - for automate ususual tasks, eg. create linstor nodes and storage pools
 
 
 #### Preparation

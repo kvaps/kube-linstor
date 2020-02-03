@@ -101,7 +101,7 @@ We are also using:
 * Install kube-linstor chart:
 
   ```
-  helm install -g helm/kube-linstor --namespace linstor -f examples/linstor-db.yaml
+  helm install linstor helm/kube-linstor --namespace linstor -f examples/linstor-db.yaml
   ```
 
 ## Usage

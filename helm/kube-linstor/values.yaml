@@ -118,7 +118,7 @@ csi:
       pullPolicy: IfNotPresent
     csiSnapshotter:
       repository: quay.io/k8scsi/csi-snapshotter
-      tag: v1.2.2
+      tag: v2.0.1
       pullPolicy: IfNotPresent
     csiNodeDriverRegistrar:
       repository: quay.io/k8scsi/csi-node-driver-registrar

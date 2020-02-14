@@ -6,7 +6,7 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 
 | Image                    | Build Status                                                                      |
-|--------------------------|-----------------------------------------------------------------------------------|
+|:-------------------------|:----------------------------------------------------------------------------------|
 | **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
 | **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
 | **[linstor-stunnel]**    | [![linstor-stunnel-status]](https://hub.docker.com/r/kvaps/linstor-stunnel)       |
@@ -49,13 +49,18 @@ We are also using:
 > Commands below provided for Helm v3 but Helm v2 is also supported.  
 > You can use `helm template` instead of `helm install`, this is also working as well.
 
+Create `linstor` namespace.
+```
+kubectl create ns linstor
+```
+
 #### Database
 
 * Install [stolon](https://github.com/helm/charts/tree/master/stable/stolon) chart:
 
   ```
   helm repo add stable https://kubernetes-charts.storage.googleapis.com
-  helm install linstor-db stable/stolon -f examples/linstor-db.yaml
+  helm install linstor-db stable/stolon --namespace linstor -f examples/linstor-db.yaml
   ```
 
   > **_NOTE:_**  
@@ -66,17 +71,17 @@ We are also using:
   helm install \
     --set node=node1,path=/var/lib/linstor-db \
     data-linstor-db-stolon-keeper-0 \
-    helm/pv-hostpath
+    helm/pv-hostpath --namespace linstor
 
   helm install \
     --set node=node2,path=/var/lib/linstor-db \
     data-linstor-db-stolon-keeper-1 \
-    helm/pv-hostpath
+    helm/pv-hostpath --namespace linstor
 
   helm install \
     --set node=node3,path=/var/lib/linstor-db \
     data-linstor-db-stolon-keeper-2 \
-    helm/pv-hostpath
+    helm/pv-hostpath --namespace linstor
   ```
 
   Parameters `name` and `namespace` **must match** the PVC's name and namespace of your database, `node` should match exact node name.
@@ -88,7 +93,7 @@ We are also using:
   kubectl exec -ti -n linstor linstor-db-stolon-keeper-0 bash
   PGPASSWORD=$(cat $STKEEPER_PG_SU_PASSWORDFILE) psql -h linstor-db-stolon-proxy -U stolon postgres
   ```
-  
+
 * Create user and database for linstor:
   ```
   CREATE DATABASE linstor;

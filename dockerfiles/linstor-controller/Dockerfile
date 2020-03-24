@@ -27,7 +27,7 @@ RUN apt-get update \
       /data/linstordb > /config/linstor.toml
 
 # Install postgresql connector
-ENV JDBC_POSTGRESQL_VERSION 42.2.2
+ENV JDBC_POSTGRESQL_VERSION 42.2.11
 RUN wget https://jdbc.postgresql.org/download/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
       -O /usr/share/linstor-server/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar
 

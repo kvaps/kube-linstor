@@ -1,0 +1,21 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+{{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $fullName }}-controller-tls
+  annotations:
+    "helm.sh/resource-policy": "keep"
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "directives.qbec.io/update-policy": "never"
+type: kubernetes.io/tls
+data:
+  {{- with genSelfSignedCert "linstor_controller" nil nil 3650 }}
+  tls.crt: {{ b64enc .Cert }}
+  tls.key: {{ b64enc .Key }}
+  {{- end }}
+{{- end }}
+{{- end }}

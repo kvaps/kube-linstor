@@ -19,10 +19,25 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 
-{{- define "linstor.pskKey" -}}
-{{- if .Values.stunnel.pskPass -}}
-{{- printf "%s:%s\n" .Values.stunnel.pskUser .Values.stunnel.pskPass -}}
-{{- else -}}
-{{- printf "%s:%s\n" .Values.stunnel.pskUser (randAlphaNum 32) -}}
-{{- end -}}
-{{- end -}}
+{{/*
+Generates linstor.toml config file
+*/}}
+{{- define "linstor.controllerConfig" -}}
+[db]
+  user = "{{ .Values.controller.db.user }}"
+  password = "{{ .Values.controller.db.password }}"
+  connection_url = "{{ .Values.controller.db.connectionUrl }}"
+[http]
+  port = {{ .Values.controller.port }}
+{{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
+[https]
+  port = {{ .Values.controller.ssl.port }}
+  keystore = "/config/ssl/keystore.jks"
+  keystore_password = "linstor"
+  {{- if .Values.controller.ssl.enabled }}
+  truststore = "/config/ssl/trustore_client.jks"
+  truststore_password = "linstor"
+  {{- end }}
+{{- end }}
+{{ end }}
+

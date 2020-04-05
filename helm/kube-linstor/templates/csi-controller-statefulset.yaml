@@ -1,0 +1,120 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.csi.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $fullName }}-csi-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-csi-controller
+      role: linstor-csi
+  serviceName: linstor-csi
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-csi-controller
+        role: linstor-csi
+    spec:
+      containers:
+      {{- if .Values.controller.ssl.enabled }}
+      - name: stunnel
+        image: {{ .Values.csi.image.stunnel.repository }}:{{ .Values.csi.image.stunnel.tag }}
+        imagePullPolicy: {{ .Values.csi.image.stunnel.pullPolicy }}
+        args:
+        - /etc/stunnel/stunnel-client.conf
+        volumeMounts:
+        - mountPath: /etc/stunnel
+          name: stunnel-config
+        - mountPath: /tls
+          name: client-tls
+      {{- end }}
+      - name: csi-provisioner
+        image: {{ .Values.csi.image.csiProvisioner.repository }}:{{ .Values.csi.image.csiProvisioner.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiProvisioner.pullPolicy }}
+        args:
+        - --v=5
+        - --csi-address=$(ADDRESS)
+        - --timeout=120s
+        - --feature-gates=Topology={{ .Values.csi.controller.csiProvisioner.topology }}
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy/
+          name: socket-dir
+      - name: csi-attacher
+        image: {{ .Values.csi.image.csiAttacher.repository }}:{{ .Values.csi.image.csiAttacher.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiAttacher.pullPolicy }}
+        args:
+        - --v=5
+        - --csi-address=$(ADDRESS)
+        - --timeout=120s
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy/
+          name: socket-dir
+      - name: csi-snapshotter
+        image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}
+        args:
+        - --csi-address=$(ADDRESS)
+        - --timeout=120s
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy/
+          name: socket-dir
+      - name: linstor-csi-plugin
+        image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
+        imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
+        args:
+        - --csi-endpoint=$(CSI_ENDPOINT)
+        - --node=$(KUBE_NODE_NAME)
+        - --linstor-endpoint=$(LINSTOR_IP)
+        - --log-level=debug
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: LINSTOR_IP
+          {{- if .Values.controller.ssl.enabled }}
+          value: http://localhost:3370
+          {{- else }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+          {{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      imagePullSecrets:
+        {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
+      {{- with .Values.csi.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.csi.controller.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      priorityClassName: system-cluster-critical
+      serviceAccount: {{ $fullName }}-csi-controller-sa
+      volumes:
+      - emptyDir: {}
+        name: socket-dir
+      {{- if .Values.controller.ssl.enabled }}
+      - name: stunnel-config
+        configMap:
+          name: {{ $fullName }}-stunnel
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
+      {{- end }}
+{{- end }}

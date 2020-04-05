@@ -1,0 +1,131 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.csi.enabled }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $fullName }}-csi-node
+spec:
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-csi-node
+      role: linstor-csi
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-csi-node
+        role: linstor-csi
+    spec:
+      containers:
+      {{- if .Values.controller.ssl.enabled }}
+      - name: stunnel
+        image: {{ .Values.csi.image.stunnel.repository }}:{{ .Values.csi.image.stunnel.tag }}
+        imagePullPolicy: {{ .Values.csi.image.stunnel.pullPolicy }}
+        args:
+        - /etc/stunnel/stunnel-client.conf
+        volumeMounts:
+        - mountPath: /etc/stunnel
+          name: stunnel-config
+        - mountPath: /tls
+          name: client-tls
+      {{- end }}
+      - name: csi-node-driver-registrar
+        image: {{ .Values.csi.image.csiNodeDriverRegistrar.repository }}:{{ .Values.csi.image.csiNodeDriverRegistrar.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiNodeDriverRegistrar.pullPolicy }}
+        args:
+        - --v=5
+        - --csi-address=$(ADDRESS)
+        - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+        env:
+        - name: ADDRESS
+          value: /csi/csi.sock
+        - name: DRIVER_REG_SOCK_PATH
+          value: /var/lib/kubelet/plugins/linstor.csi.linbit.com/csi.sock
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - rm -rf /registration/linstor.csi.linbit.com /registration/linstor.csi.linbit.com-reg.sock
+        volumeMounts:
+        - mountPath: /csi/
+          name: plugin-dir
+        - mountPath: /registration/
+          name: registration-dir
+      - name: linstor-csi-plugin
+        image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
+        imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
+        args:
+        - --csi-endpoint=$(CSI_ENDPOINT)
+        - --node=$(KUBE_NODE_NAME)
+        - --linstor-endpoint=$(LINSTOR_IP)
+        - --log-level=debug
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: LINSTOR_IP
+          {{- if .Values.controller.ssl.enabled }}
+          value: http://localhost:3370
+          {{- else }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+          {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /csi
+          name: plugin-dir
+        - mountPath: /var/lib/kubelet
+          mountPropagation: Bidirectional
+          name: pods-mount-dir
+        - mountPath: /dev
+          name: device-dir
+      imagePullSecrets:
+        {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
+      {{- with . }}
+      nodeSelector:
+        {{- toYaml .Values.csi.node.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- with .Values.csi.node.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      priorityClassName: system-node-critical
+      serviceAccount: {{ $fullName }}-csi-node-sa
+      volumes:
+      - name: registration-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins_registry/
+          type: DirectoryOrCreate
+      - name: plugin-dir
+        hostPath:
+          path: /var/lib/kubelet/plugins/linstor.csi.linbit.com/
+          type: DirectoryOrCreate
+      - name: pods-mount-dir
+        hostPath:
+          path: /var/lib/kubelet
+          type: Directory
+      - name: device-dir
+        hostPath:
+          path: /dev
+      {{- if .Values.controller.ssl.enabled }}
+      - name: stunnel-config
+        configMap:
+          name: {{ $fullName }}-stunnel
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
+      {{- end }}
+{{- end }}

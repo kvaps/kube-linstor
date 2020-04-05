@@ -12,6 +12,11 @@ controller:
     pullSecrets:
       - name: regsecret
 
+  port: 3370
+  ssl:
+    enabled: true
+    port: 3371
+
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""
   
@@ -20,19 +25,12 @@ controller:
   #     operator: Exists
   #     effect: NoSchedule
   
-  # Create service for linstor-controller (not required if stunnel enabled)
-  expose: false
-  
   initSettings:
     enabled: false
     # Set plain connector listen to localhost 
     plainConnectorBindAddress: "127.0.0.1"
     # Disable user security (required for setting global options)
     disableUserSecurity: true
-
-  # Bind address for API, must be set to 0.0.0.0 if stunnel disabled
-  restApiBindAddress: "127.0.0.1"
-  restApiBindPort: "3370"
 
   # Database config
   db:
@@ -47,24 +45,6 @@ controller:
   #   connectionUrl: jdbc:postgresql://linstor-db-stolon-proxy/linstor
 
 # ------------------------------------------------------------------------------
-# Stunnel is used to encrypt all the connections between linstor-controller and
-# linstor-clients
-# ------------------------------------------------------------------------------
-
-stunnel:
-  enabled: true
-  image:
-    repository: kvaps/linstor-stunnel
-    tag: v1.5.2
-    pullPolicy: IfNotPresent
-
-  bindPort: "3371"
-
-  pskUser: linstor
-  # If not set password will be automatically generated
-  # pskPass: "LongAndSecureKeyHere1234512345"
-
-# ------------------------------------------------------------------------------
 # Linstor-satellites run on every node, they listen and perform controller tasks
 # They operates directly with LVM and ZFS subsystems
 # ------------------------------------------------------------------------------
@@ -77,6 +57,9 @@ satellite:
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
+
+  ssl:
+    enabled: true
 
   # Oerwrite drbd.conf and global_common.conf files. This option will enable
   # usage-count=no and udev-always-use-vnr options by default
@@ -104,6 +87,10 @@ csi:
   image:
     pullSecrets:
       - name: regsecret
+    stunnel:
+      repository: kvaps/linstor-stunnel
+      tag: v1.5.2
+      pullPolicy: IfNotPresent
     linstorCsiPlugin:
       repository: quay.io/linbit/linstor-csi
       tag: v0.7.4

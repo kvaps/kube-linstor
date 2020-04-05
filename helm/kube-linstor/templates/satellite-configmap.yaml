@@ -1,0 +1,46 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.satellite.enabled }}
+{{- if or .Values.satellite.overwriteDrbdConf .Values.satellite.ssl.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-satellite
+data:
+  {{- if .Values.satellite.overwriteDrbdConf }}
+  drbd.conf: |+
+    include "drbd.d/global_common.conf";
+    include "drbd.d/*.res";
+
+  global_common.conf: |+
+    global {
+     usage-count no;
+     udev-always-use-vnr;
+    }
+    common {
+     handlers {
+     }
+     startup {
+     }
+     options {
+     }
+     disk {
+     }
+     net {
+     }
+    }
+  {{- end }}
+  {{- if .Values.satellite.ssl.enabled }}
+  linstor_satellite.toml: |+
+    [netcom]
+      type="ssl"
+      port=3367
+      server_certificate="/config/ssl/keystore.jks"
+      trusted_certificates="/config/ssl/certificates.jks"
+      key_password="linstor"
+      keystore_password="linstor"
+      truststore_password="linstor"
+      ssl_protocol="TLSv1.2"
+  {{- end }}
+{{- end }}
+{{- end }}

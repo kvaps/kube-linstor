@@ -1,0 +1,16 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+{{- if .Values.controller.ssl.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-client
+  namespace: {{ .Release.Namespace }}
+data:
+  linstor-client.conf: |+
+    [global]
+      certfile = /tls/tls.crt
+      keyfile = /tls/tls.key
+{{- end }}
+{{- end }}

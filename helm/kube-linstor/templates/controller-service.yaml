@@ -1,0 +1,17 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-controller
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: restapi
+    port: {{ .Values.controller.port }}
+  - name: ssl
+    port: {{ .Values.controller.ssl.port }}
+  selector:
+    app: {{ $fullName }}-controller
+{{- end }}

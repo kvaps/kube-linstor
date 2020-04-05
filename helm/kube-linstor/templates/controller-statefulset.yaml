@@ -1,0 +1,144 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: {{ $fullName }}-controller
+  name: {{ $fullName }}-controller
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-controller
+  serviceName: {{ $fullName }}-controller
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-controller
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.controller.image.pullSecrets | nindent 8 }}
+      {{- if or .Values.controller.ssl.enabled .Values.controller.initSettings.enabled }}
+      initContainers:
+      {{- if .Values.controller.ssl.enabled }}
+      - name: load-certs
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        command:
+        - /bin/bash
+        - -xec
+        - |-
+          tmp="$(mktemp -u).p12"
+          openssl pkcs12 -export -in /tls/controller/tls.crt -inkey /tls/controller/tls.key -out "$tmp" -name linstor_controller -passin 'pass:linstor' -passout 'pass:linstor'
+          keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor_satellite -destkeystore /config/ssl/certificates.jks
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor_satellite -destkeystore /config/ssl/trustore_client.jks
+          rm -f "$tmp"
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: config-ssl
+          mountPath: /config/ssl
+        - name: controller-tls
+          mountPath: /tls/controller
+        - name: satellite-tls
+          mountPath: /tls/satellite
+        - name: client-tls
+          mountPath: /tls/client
+      {{- end }}
+      {{- if .Values.controller.initSettings.enabled }}
+      - name: init-settings
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        command:
+        - /bin/bash
+        - -xec
+        - |-
+          echo "setcfgval namespace(netcom) key(PlainConnector/bindaddress) value({{ .Values.controller.initSettings.plainConnectorBindAddress }})
+          {{- if .Values.controller.initSettings.disableUserSecurity }}
+          setSecLvl secLvl(NO_SECURITY){{ end }}
+          shutdown" | /usr/share/linstor-server/bin/Controller -d --logs=/logs --config-directory=/config
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: logs
+          mountPath: /logs
+      {{- end }}
+      {{- end }}
+      containers:
+      - name: linstor-controller
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        command:
+        - /tini
+        - --
+        - /usr/share/linstor-server/bin/Controller
+        - --logs=/logs
+        - --config-directory=/config
+        livenessProbe:
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - controller
+            - list-properties
+          periodSeconds: 10
+          initialDelaySeconds: 300
+        ports:
+        - name: restapi
+          containerPort: {{ .Values.controller.port }}
+        {{- if .Values.controller.ssl.enabled }}
+        - name: ssl
+          containerPort: {{ .Values.controller.ssl.port }}
+        {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        {{- if .Values.controller.ssl.enabled }}
+        - name: client-config
+          mountPath: /etc/linstor
+        - name: config-ssl
+          mountPath: /config/ssl
+          readOnly: true
+        - name: client-tls
+          mountPath: /tls
+        {{- end }}
+        - name: logs
+          mountPath: /logs
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      volumes:
+      - name: config
+        secret:
+          secretName: {{ $fullName }}-controller
+      - name: logs
+        hostPath:
+          path: /var/log/{{ $fullName }}-controller
+      {{- if .Values.controller.ssl.enabled }}
+      - name: config-ssl
+        emptyDir: {}
+      - name: controller-tls
+        secret:
+          secretName: {{ $fullName }}-controller-tls
+      - name: satellite-tls
+        secret:
+          secretName: {{ $fullName }}-satellite-tls
+      - name: client-config
+        configMap:
+          name: {{ $fullName }}-client
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
+      {{- end }}
+{{- end }}

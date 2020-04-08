@@ -26,9 +26,4 @@ RUN apt-get update \
  && /usr/share/linstor-server/bin/linstor-config create-db-file \
       /data/linstordb > /config/linstor.toml
 
-# Install postgresql connector
-ENV JDBC_POSTGRESQL_VERSION 42.2.11
-RUN wget https://jdbc.postgresql.org/download/postgresql-${JDBC_POSTGRESQL_VERSION}.jar \
-      -O /usr/share/linstor-server/lib/postgresql-${JDBC_POSTGRESQL_VERSION}.jar
-
 CMD [ "/usr/share/linstor-server/bin/Controller", "--logs=/logs", "--config-directory=/config" ]

@@ -110,6 +110,7 @@ spec:
         {{- end }}
         - name: logs
           mountPath: /logs
+      priorityClassName: system-node-critical
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

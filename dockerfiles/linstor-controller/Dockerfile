@@ -1,10 +1,10 @@
-FROM ubuntu:bionic
+FROM debian:stretch
 ARG VERSION=
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade
 RUN apt-get -y update \
- && apt-get install -y wget gnupg \
+ && apt-get install -y wget gnupg apt-transport-https ca-certificates \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC1B5A793C04BB3905AD837734893610CEAA9512 \
  && echo "deb http://ppa.launchpad.net/linbit/linbit-drbd9-stack/ubuntu bionic main" \
       > /etc/apt/sources.list.d/linbit.list \

@@ -87,9 +87,13 @@ csi:
   image:
     pullSecrets:
       - name: regsecret
+    stunnel:
+      repository: kvaps/linstor-stunnel
+      tag: v1.6.0
+      pullPolicy: IfNotPresent
     linstorCsiPlugin:
       repository: quay.io/linbit/linstor-csi
-      tag: v0.7.5
+      tag: v0.7.4
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner

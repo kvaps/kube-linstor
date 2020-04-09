@@ -32,10 +32,10 @@ spec:
         - -xec
         - |-
           tmp="$(mktemp -u).p12"
-          openssl pkcs12 -export -in /tls/controller/tls.crt -inkey /tls/controller/tls.key -out "$tmp" -name linstor_controller -passin 'pass:linstor' -passout 'pass:linstor'
+          openssl pkcs12 -export -in /tls/controller/tls.crt -inkey /tls/controller/tls.key -out "$tmp" -name linstor-controller -passin 'pass:linstor' -passout 'pass:linstor'
           keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
-          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor_satellite -destkeystore /config/ssl/certificates.jks
-          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor_satellite -destkeystore /config/ssl/trustore_client.jks
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor-satellite -destkeystore /config/ssl/certificates.jks
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor-satellite -destkeystore /config/ssl/trustore_client.jks
           rm -f "$tmp"
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         volumeMounts:
@@ -86,7 +86,7 @@ spec:
             - "5"
             - linstor
             - controller
-            - list-properties
+            - version
           periodSeconds: 10
           initialDelaySeconds: 300
         ports:
@@ -99,9 +99,9 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
-        {{- if .Values.controller.ssl.enabled }}
         - name: client-config
           mountPath: /etc/linstor
+        {{- if .Values.controller.ssl.enabled }}
         - name: config-ssl
           mountPath: /config/ssl
           readOnly: true
@@ -126,6 +126,9 @@ spec:
       - name: logs
         hostPath:
           path: /var/log/{{ $fullName }}-controller
+      - name: client-config
+        configMap:
+          name: {{ $fullName }}-client
       {{- if .Values.controller.ssl.enabled }}
       - name: config-ssl
         emptyDir: {}
@@ -135,9 +138,6 @@ spec:
       - name: satellite-tls
         secret:
           secretName: {{ $fullName }}-satellite-tls
-      - name: client-config
-        configMap:
-          name: {{ $fullName }}-client
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls

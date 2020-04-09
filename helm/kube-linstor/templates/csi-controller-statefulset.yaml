@@ -74,22 +74,29 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: LINSTOR_IP
+        {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
-        {{- if .Values.controller.ssl.enabled }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
         - name: LS_USER_CERTIFICATE
-          value: /tls/tls.crt
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: {{ $fullName }}-client-tls
         - name: LS_USER_KEY
-          value: /tls/tls.key
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: {{ $fullName }}-client-tls
         - name: LS_ROOT_CA
-          value: /tls/ca.crt
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: {{ $fullName }}-client-tls
         {{- end }}
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-        {{- if .Values.controller.ssl.enabled }}
-        - mountPath: /tls
-          name: client-tls
-        {{- end }}
       imagePullSecrets:
         {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
       {{- with .Values.csi.controller.nodeSelector }}
@@ -105,9 +112,4 @@ spec:
       volumes:
       - emptyDir: {}
         name: socket-dir
-      {{- if .Values.controller.ssl.enabled }}
-      - name: client-tls
-        secret:
-          secretName: {{ $fullName }}-client-tls
-      {{- end }}
 {{- end }}

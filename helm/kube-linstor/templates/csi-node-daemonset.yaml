@@ -61,14 +61,25 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: LINSTOR_IP
+        {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
-        {{- if .Values.controller.ssl.enabled }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
         - name: LS_USER_CERTIFICATE
-          value: /tls/tls.crt
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: {{ $fullName }}-client-tls
         - name: LS_USER_KEY
-          value: /tls/tls.key
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: {{ $fullName }}-client-tls
         - name: LS_ROOT_CA
-          value: /tls/ca.crt
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: {{ $fullName }}-client-tls
         {{- end }}
         securityContext:
           allowPrivilegeEscalation: true
@@ -84,10 +95,6 @@ spec:
           name: pods-mount-dir
         - mountPath: /dev
           name: device-dir
-        {{- if .Values.controller.ssl.enabled }}
-        - mountPath: /tls
-          name: client-tls
-        {{- end }}
       imagePullSecrets:
         {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
       {{- with . }}
@@ -116,9 +123,4 @@ spec:
       - name: device-dir
         hostPath:
           path: /dev
-      {{- if .Values.controller.ssl.enabled }}
-      - name: client-tls
-        secret:
-          secretName: {{ $fullName }}-client-tls
-      {{- end }}
 {{- end }}

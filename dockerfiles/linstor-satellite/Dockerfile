@@ -10,7 +10,8 @@ RUN apt-get -y update \
       > /etc/apt/sources.list.d/linbit.list \
  && apt-get update \
  && apt-get -y upgrade \
- && apt-get clean
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install tini
 ENV TINI_VERSION v0.18.0
@@ -22,7 +23,8 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update \
  && apt-get install -y linstor-satellite drbd-utils \
  && mkdir -p /config /logs \
- && apt-get clean
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install additional tools
 RUN apt-get update \
@@ -32,6 +34,7 @@ RUN apt-get update \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \
  && apt-get -fy install \
  && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* \
  && sed -i /etc/lvm/lvm.conf \
       -e "s/use_lvmetad = 1/use_lvmetad = 0/" \
       -e "/^ *[^#] *global_filter/d" \

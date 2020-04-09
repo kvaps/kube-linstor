@@ -10,7 +10,8 @@ RUN apt-get -y update \
       > /etc/apt/sources.list.d/linbit.list \
  && apt-get update \
  && apt-get -y upgrade \
- && apt-get clean
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install tini
 ENV TINI_VERSION v0.18.0
@@ -22,6 +23,7 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update \
  && apt-get install -y linstor-controller linstor-client \
  && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /config /logs \
  && /usr/share/linstor-server/bin/linstor-config create-db-file \
       /data/linstordb > /config/linstor.toml

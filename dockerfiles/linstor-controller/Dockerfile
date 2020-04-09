@@ -21,7 +21,8 @@ ENTRYPOINT ["/tini", "--"]
 
 # Install linstor-controller
 RUN apt-get update \
- && apt-get install -y linstor-controller linstor-client \
+ && apt-get install -y openjdk-8-jdk-headless linstor-controller linstor-client \
+ && ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /etc/alternatives/java \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /config /logs \

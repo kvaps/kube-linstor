@@ -21,7 +21,8 @@ ENTRYPOINT ["/tini", "--"]
 
 # Install linstor-satellite
 RUN apt-get update \
- && apt-get install -y linstor-satellite drbd-utils \
+ && apt-get install -y openjdk-8-jdk-headless linstor-satellite drbd-utils \
+ && ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /etc/alternatives/java \
  && mkdir -p /config /logs \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*

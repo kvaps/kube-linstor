@@ -1,4 +1,5 @@
 {{- $fullName := include "linstor.fullname" . -}}
+{{- $cn := printf "%s-satellite" $fullName -}}
 {{- if .Values.satellite.enabled }}
 {{- if .Values.satellite.ssl.enabled }}
 ---
@@ -13,7 +14,7 @@ metadata:
     "directives.qbec.io/update-policy": "never"
 type: kubernetes.io/tls
 data:
-  {{- with genSelfSignedCert "linstor_satellite" nil nil 3650 }}
+  {{- with genSelfSignedCert $cn nil nil 3650 }}
   tls.crt: {{ b64enc .Cert }}
   tls.key: {{ b64enc .Key }}
   {{- end }}

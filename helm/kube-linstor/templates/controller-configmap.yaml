@@ -12,5 +12,6 @@ data:
     [global]
       certfile = /tls/tls.crt
       keyfile = /tls/tls.key
+      cafile = /tls/ca.crt
 {{- end }}
 {{- end }}

@@ -17,4 +17,17 @@ data:
       keyfile = /tls/tls.key
       cafile = /tls/ca.crt
       {{- end }}
+  {{- if .Values.controller.ssl.enabled }}
+  stunnel-server.conf: |
+    foreground = yes
+    delay = yes
+    debug = 4
+    [PSK server 1]
+    accept = 0.0.0.0:{{ .Values.controller.ssl.port }}
+    connect = {{ .Values.controller.port }}
+    ciphers = PSK
+    cert = /tls/tls.crt
+    key = /tls/tls.key
+    CAfile = /tls/ca.crt
+  {{- end }}
 {{- end }}

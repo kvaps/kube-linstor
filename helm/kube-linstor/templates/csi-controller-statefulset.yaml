@@ -19,18 +19,6 @@ spec:
         role: linstor-csi
     spec:
       containers:
-      {{- if .Values.controller.ssl.enabled }}
-      - name: stunnel
-        image: {{ .Values.csi.image.stunnel.repository }}:{{ .Values.csi.image.stunnel.tag }}
-        imagePullPolicy: {{ .Values.csi.image.stunnel.pullPolicy }}
-        args:
-        - /etc/stunnel/stunnel-client.conf
-        volumeMounts:
-        - mountPath: /etc/stunnel
-          name: stunnel-config
-        - mountPath: /tls
-          name: client-tls
-      {{- end }}
       - name: csi-provisioner
         image: {{ .Values.csi.image.csiProvisioner.repository }}:{{ .Values.csi.image.csiProvisioner.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiProvisioner.pullPolicy }}
@@ -86,14 +74,22 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: LINSTOR_IP
-          {{- if .Values.controller.ssl.enabled }}
-          value: http://localhost:3370
-          {{- else }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
-          {{- end }}
+        {{- if .Values.controller.ssl.enabled }}
+        - name: LS_USER_CERTIFICATE
+          value: /tls/tls.crt
+        - name: LS_USER_KEY
+          value: /tls/tls.key
+        - name: LS_ROOT_CA
+          value: /tls/ca.crt
+        {{- end }}
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+        {{- if .Values.controller.ssl.enabled }}
+        - mountPath: /tls
+          name: client-tls
+        {{- end }}
       imagePullSecrets:
         {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
       {{- with .Values.csi.controller.nodeSelector }}
@@ -110,9 +106,6 @@ spec:
       - emptyDir: {}
         name: socket-dir
       {{- if .Values.controller.ssl.enabled }}
-      - name: stunnel-config
-        configMap:
-          name: {{ $fullName }}-stunnel
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls

@@ -4,11 +4,12 @@ version: v1.6.0
 keywords:
   - linstor
   - drbd
+  - storage
+  - csi
 home: https://github.com/kvaps/kube-linstor
 sources:
   - https://hub.docker.com/r/kvaps/linstor-controller
   - https://hub.docker.com/r/kvaps/linstor-satellite
-  - https://hub.docker.com/r/kvaps/linstor-stunnel
 maintainers:
   - name: kvaps
     email: kvapss@gmail.com

@@ -22,12 +22,12 @@ data:
     foreground = yes
     delay = yes
     debug = 4
-    [PSK server 1]
+    [linstor-ssl]
     accept = 0.0.0.0:{{ .Values.controller.ssl.port }}
     connect = {{ .Values.controller.port }}
-    ciphers = PSK
     cert = /tls/tls.crt
     key = /tls/tls.key
     CAfile = /tls/ca.crt
+    verify = 2
   {{- end }}
 {{- end }}

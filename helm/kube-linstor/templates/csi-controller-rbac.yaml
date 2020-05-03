@@ -25,9 +25,6 @@ metadata:
   name: {{ $fullName }}-csi-provisioner-role
 rules:
   - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
-  - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: [""]
@@ -51,9 +48,6 @@ kind: ClusterRole
 metadata:
   name: {{ $fullName }}-csi-resizer-role
 rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
   - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "patch"]
@@ -84,9 +78,6 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotclasses"]
     verbs: ["get", "list", "watch"]

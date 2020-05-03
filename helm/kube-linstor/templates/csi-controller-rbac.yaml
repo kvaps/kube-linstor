@@ -46,6 +46,27 @@ rules:
     resources: ["volumesnapshotcontents"]
     verbs: ["get", "list"]
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $fullName }}-csi-resizer-role
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims/status"]
+    verbs: ["patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -110,6 +131,19 @@ subjects:
 - kind: ServiceAccount
   name: {{ $fullName }}-csi-controller-sa
   namespace: {{ .Release.Namespace }}
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $fullName }}-csi-resizer-binding
+roleRef:
+  kind: ClusterRole
+  name: {{ $fullName }}-csi-resizer-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: {{ $fullName }}-csi-controller-sa
+    namespace: {{ .Release.Namespace }}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

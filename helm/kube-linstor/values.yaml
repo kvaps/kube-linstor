@@ -102,7 +102,7 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: docker.io/kvaps/linstor-csi
-      tag: fix-65
+      tag: resize
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
@@ -111,6 +111,10 @@ csi:
     csiAttacher:
       repository: quay.io/k8scsi/csi-attacher
       tag: v2.1.1
+      pullPolicy: IfNotPresent
+    csiResizer:
+      repository: quay.io/k8scsi/csi-resizer
+      tag: v0.5.0
       pullPolicy: IfNotPresent
     csiSnapshotter:
       repository: quay.io/k8scsi/csi-snapshotter

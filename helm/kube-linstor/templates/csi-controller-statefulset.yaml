@@ -46,6 +46,18 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
+      - name: csi-resizer
+        image: {{ .Values.csi.image.csiResizer.repository }}:{{ .Values.csi.image.csiResizer.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiResizer.pullPolicy }}
+        args:
+        - --v=5
+        - --csi-address=$(ADDRESS)
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy/
+          name: socket-dir
       - name: csi-snapshotter
         image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}

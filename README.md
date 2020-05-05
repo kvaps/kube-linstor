@@ -24,10 +24,6 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 * DRBD9 kernel module installed on each sattelite node.
 * PostgeSQL database / etcd or any other backing store for redundancy.
 
-## Limitations
-
-* Containerized Linstor satellites tested only on Ubuntu and Debian systems, but should work on CentOS systems as well.
-
 ## QuckStart
 
 Linstor consists of several components:
@@ -101,7 +97,7 @@ kubectl create ns linstor
 * Install kube-linstor chart:
 
   ```bash
-  helm install linstor helm/kube-linstor --namespace linstor -f examples/linstor-db.yaml
+  helm install linstor helm/kube-linstor --namespace linstor -f examples/linstor.yaml
   ```
 
 ## Usage
@@ -127,13 +123,13 @@ linstor node create alpha 1.2.3.4 --communication-type SSL
 If you want to have external access, you need to download certificates for linstor client:
 
 ```bash
-kubectl get secrets -name linstor-linstor-client-tls \
-  -o go-template='{{ index .data "tls.key" | base64decode }}{{ index .data "tls.crt" | base64decode }}
+kubectl get secrets --namespace linstor linstor-linstor-client-tls \
+  -o go-template='{{ range $k, $v := .data }}{{ $v | base64decode }}{{ end }}'
 ```
 
 Then follow [official linstor documentation](https://www.linbit.com/drbd-user-guide/users-guide-linstor/#s-rest-api-https-restricted-client) to configure client.
 
-#### Enable SSL
+#### Enable SSL for existing nodes
 
 If you're switching your setup from PLAIN to SSL, this simple command will reconfigure all your nodes:
 

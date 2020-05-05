@@ -137,6 +137,11 @@ If you're switching your setup from PLAIN to SSL, this simple command will recon
 linstor n l | awk '/(PLAIN)/ { print "linstor n i m -p 3367 --communication-type SSL " $2 " default" }' | sh -ex
 ```
 
+## Additional Information
+
+* [Perform backups and database management](docs/BACKUP.md)
+* [Upgrade notes](docs/UPGRADE.md)
+
 ## Licenses
 
 * **[This project](LICENSE)** under **Apache License**

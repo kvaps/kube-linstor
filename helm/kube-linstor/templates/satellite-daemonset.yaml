@@ -68,9 +68,6 @@ spec:
         imagePullPolicy: {{ .Values.satellite.image.pullPolicy }}
         securityContext:
           privileged: true
-        env:
-        - name: TINI_SUBREAPER
-          value: 'true'
         volumeMounts:
         {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
         - name: config

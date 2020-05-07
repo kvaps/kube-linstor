@@ -108,18 +108,6 @@ spec:
         {{- end }}
         - name: logs
           mountPath: /logs
-      {{- if .Values.controller.ssl.enabled }}
-      - name: linstor-stunnel
-        image: {{ .Values.stunnel.image.repository }}:{{ .Values.stunnel.image.tag }}
-        imagePullPolicy: {{ .Values.stunnel.image.pullPolicy }}
-        args:
-        - /etc/linstor/stunnel-server.conf
-        volumeMounts:
-        - name: client-config
-          mountPath: /etc/linstor
-        - name: controller-tls
-          mountPath: /tls
-      {{- end }}
       priorityClassName: system-node-critical
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:

@@ -46,18 +46,6 @@ controller:
 
 
 # ------------------------------------------------------------------------------
-# Stunnel is used to encrypt all the connections between linstor-controller and
-# linstor-clients
-# ------------------------------------------------------------------------------
-
-stunnel:
-  enabled: true
-  image:
-    repository: kvaps/linstor-stunnel
-    tag: v1.7.0
-    pullPolicy: IfNotPresent
-
-# ------------------------------------------------------------------------------
 # Linstor-satellites run on every node, they listen and perform controller tasks
 # They operates directly with LVM and ZFS subsystems
 # ------------------------------------------------------------------------------

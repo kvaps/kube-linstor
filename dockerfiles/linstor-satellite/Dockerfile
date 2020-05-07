@@ -37,7 +37,7 @@ RUN apt-get -y update \
 COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
 RUN apt-get update \
  && apt-get install -y default-jre-headless drbd-utils thin-provisioning-tools \
- && dpkg -i packages/linstor-*.deb \
+ && dpkg -i packages/*.deb \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /config /logs

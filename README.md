@@ -9,11 +9,14 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 |:-------------------------|:----------------------------------------------------------------------------------|
 | **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
 | **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
+| **[linstor-stunnel]**    | [![linstor-stunnel-status]](https://hub.docker.com/r/kvaps/linstor-stunnel)       |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-controller.svg
 [linstor-satellite]: dockerfiles/linstor-controller/Dockerfile
 [linstor-satellite-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-satellite.svg
+[linstor-stunnel]: dockerfiles/linstor-stunnel/Dockerfile
+[linstor-stunnel-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-stunnel.svg
 
 ## Requirements
 

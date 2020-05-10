@@ -17,4 +17,17 @@ data:
       keyfile = /tls/tls.key
       cafile = /tls/ca.crt
       {{- end }}
+  {{- if .Values.controller.ssl.enabled }}
+  stunnel-server.conf: |
+    foreground = yes
+    delay = yes
+    debug = 4
+    [linstor-ssl]
+    accept = 0.0.0.0:{{ .Values.controller.ssl.port }}
+    connect = {{ .Values.controller.port }}
+    cert = /tls/tls.crt
+    key = /tls/tls.key
+    CAfile = /tls/ca.crt
+    verify = 2
+  {{- end }}
 {{- end }}

@@ -22,6 +22,7 @@ data:
   tls.key: {{ b64enc .Key }}
   ca.crt: {{ b64enc $ca.Cert }}
   {{- end }}
+{{- if or .Values.controller.ssl.enabled }}
 ---
 apiVersion: v1
 kind: Secret
@@ -39,5 +40,6 @@ data:
   tls.key: {{ b64enc .Key }}
   ca.crt: {{ b64enc $ca.Cert }}
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

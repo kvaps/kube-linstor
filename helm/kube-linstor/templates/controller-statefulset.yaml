@@ -21,9 +21,9 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml .Values.controller.image.pullSecrets | nindent 8 }}
-      {{- if or .Values.controller.ssl.enabled .Values.controller.initSettings.enabled }}
+      {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled .Values.controller.initSettings.enabled }}
       initContainers:
-      {{- if .Values.controller.ssl.enabled }}
+      {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
       - name: load-certs
         image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
@@ -34,8 +34,12 @@ spec:
           tmp="$(mktemp -u).p12"
           openssl pkcs12 -export -in /tls/controller/tls.crt -inkey /tls/controller/tls.key -out "$tmp" -name linstor-controller -passin 'pass:linstor' -passout 'pass:linstor'
           keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
+          {{- if .Values.controller.ssl.enabled }}
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor-client -destkeystore /config/ssl/trustore_client.jks
+          {{- end }}
+          {{- if .Values.satellite.ssl.enabled }}
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor-satellite -destkeystore /config/ssl/certificates.jks
-          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor-satellite -destkeystore /config/ssl/trustore_client.jks
+          {{- end }}
           rm -f "$tmp"
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         volumeMounts:
@@ -43,12 +47,18 @@ spec:
           mountPath: /config
         - name: config-ssl
           mountPath: /config/ssl
+        {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
         - name: controller-tls
           mountPath: /tls/controller
-        - name: satellite-tls
-          mountPath: /tls/satellite
+        {{- end }}
+        {{- if .Values.controller.ssl.enabled }}
         - name: client-tls
           mountPath: /tls/client
+        {{- end }}
+        {{- if .Values.satellite.ssl.enabled }}
+        - name: satellite-tls
+          mountPath: /tls/satellite
+        {{- end }}
       {{- end }}
       {{- if .Values.controller.initSettings.enabled }}
       - name: init-settings
@@ -99,10 +109,12 @@ spec:
           mountPath: /config
         - name: client-config
           mountPath: /etc/linstor
-        {{- if .Values.controller.ssl.enabled }}
+        {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
         - name: config-ssl
           mountPath: /config/ssl
           readOnly: true
+        {{- end }}
+        {{- if .Values.controller.ssl.enabled }}
         - name: client-tls
           mountPath: /tls
         {{- end }}
@@ -127,17 +139,23 @@ spec:
       - name: client-config
         configMap:
           name: {{ $fullName }}-client
-      {{- if .Values.controller.ssl.enabled }}
+      {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
       - name: config-ssl
         emptyDir: {}
+      {{- end }}
+      {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
       - name: controller-tls
         secret:
           secretName: {{ $fullName }}-controller-tls
-      - name: satellite-tls
-        secret:
-          secretName: {{ $fullName }}-satellite-tls
+      {{- end }}
+      {{- if .Values.controller.ssl.enabled }}
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls
+      {{- end }}
+      {{- if .Values.satellite.ssl.enabled }}
+      - name: satellite-tls
+        secret:
+          secretName: {{ $fullName }}-satellite-tls
       {{- end }}
 {{- end }}

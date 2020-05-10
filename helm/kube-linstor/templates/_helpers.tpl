@@ -29,15 +29,13 @@ Generates linstor.toml config file
   connection_url = "{{ .Values.controller.db.connectionUrl }}"
 [http]
   port = {{ .Values.controller.port }}
-{{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
+{{- if or .Values.controller.ssl.enabled }}
 [https]
   port = {{ .Values.controller.ssl.port }}
   keystore = "/config/ssl/keystore.jks"
   keystore_password = "linstor"
-  {{- if .Values.controller.ssl.enabled }}
   truststore = "/config/ssl/trustore_client.jks"
   truststore_password = "linstor"
-  {{- end }}
 {{- end }}
 {{ end }}
 

@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: kvaps/linstor-controller
-    tag: v1.7.0
+    tag: v1.7.0-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -54,7 +54,7 @@ satellite:
   enabled: true
   image:
     repository: kvaps/linstor-satellite
-    tag: v1.7.0
+    tag: v1.7.0-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

@@ -1,6 +1,6 @@
 # Better to use fresh distros since they are containing newer lvm
 
-FROM ubuntu:focal as builder
+FROM debian:buster as builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
@@ -19,16 +19,11 @@ RUN make debrelease \
 WORKDIR /linstor-server-${VERSION}
 RUN dpkg-buildpackage -us -uc
 
-FROM ubuntu:focal
+FROM debian:buster
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade
 RUN apt-get -y update \
- && apt-get install -y wget gnupg \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC1B5A793C04BB3905AD837734893610CEAA9512 \
- && echo "deb http://ppa.launchpad.net/linbit/linbit-drbd9-stack/ubuntu focal main" \
-      > /etc/apt/sources.list.d/linbit.list \
- && apt-get update \
  && apt-get -y upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
@@ -43,8 +38,9 @@ RUN apt-get update \
  && mkdir -p /config /logs
 
 # Install additional tools
-RUN apt-get update \
- && apt-get install -y kmod zfsutils-linux cryptsetup nvme-cli \
+RUN sed -i '/^deb / s/main/main contrib/' /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install --no-install-recommends -y zfsutils-linux cryptsetup nvme-cli \
  && apt-get download lvm2 \
  && dpkg --unpack lvm2*.deb \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \

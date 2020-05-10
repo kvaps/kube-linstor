@@ -1,7 +1,7 @@
-# We forced to use xenial due OpenJDK 8
+# We forced to use stretch due OpenJDK 8
 # See: https://github.com/LINBIT/linstor-server/issues/123
 
-FROM ubuntu:xenial as builder
+FROM debian:stretch as builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
@@ -22,7 +22,7 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:xenial as client-builder
+FROM debian:stretch as client-builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
@@ -39,7 +39,8 @@ RUN git checkout v${CLIENT_VERSION} \
 WORKDIR /python-linstor-${CLIENT_VERSION}
 RUN dpkg-buildpackage -us -uc
 
-RUN make install
+RUN rm -rf /linstor-api-py \
+ && mv /python-linstor-${CLIENT_VERSION} /linstor-api-py
 
 RUN git clone https://github.com/LINBIT/linstor-client.git /linstor-client
 WORKDIR /linstor-client
@@ -52,16 +53,11 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
-FROM ubuntu:xenial
+FROM debian:stretch
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade
 RUN apt-get -y update \
- && apt-get install -y wget gnupg \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC1B5A793C04BB3905AD837734893610CEAA9512 \
- && echo "deb http://ppa.launchpad.net/linbit/linbit-drbd9-stack/ubuntu xenial main" \
-      > /etc/apt/sources.list.d/linbit.list \
- && apt-get update \
  && apt-get -y upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
@@ -70,7 +66,7 @@ RUN apt-get -y update \
 COPY --from=builder /linstor-common_*_all.deb /linstor-controller_*_all.deb /packages/
 COPY --from=client-builder /python-linstor_*_all.deb /linstor-client_*_all.deb /packages/
 RUN apt-get update \
- && apt-get install -y default-jre-headless linstor-client \
+ && apt-get install -y default-jre-headless python3-all python3-natsort \
  && dpkg -i packages/*.deb \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \

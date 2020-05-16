@@ -1,0 +1,17 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-stork
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - name: extender
+      port: 8099
+    - name: webhook
+      port: 443
+  selector:
+    app: {{ $fullName }}-stork
+{{- end }}

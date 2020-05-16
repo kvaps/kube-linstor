@@ -1,0 +1,60 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.storkScheduler.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ $fullName }}-stork-scheduler
+  name: {{ $fullName }}-stork-scheduler
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.storkScheduler.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-stork-scheduler
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-stork-scheduler
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.storkScheduler.image.pullSecrets | nindent 8 }}
+      containers:
+      - name: stork
+        image: {{ .Values.storkScheduler.image.repository }}:{{ .Values.storkScheduler.image.tag }}
+        imagePullPolicy: {{ .Values.storkScheduler.image.pullPolicy }}
+        command:
+        - /usr/local/bin/kube-scheduler
+        - --address=0.0.0.0
+        - --leader-elect=true
+        - --scheduler-name=stork
+        - --policy-configmap={{ $fullName }}-stork
+        - --policy-configmap-namespace={{ .Release.Namespace }}
+        - --lock-object-name=stork-scheduler
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10251
+          initialDelaySeconds: 15
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - {{ $fullName }}-stork-scheduler
+              topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: {{ $fullName }}-stork-scheduler
+      priorityClassName: system-node-critical
+      {{- with .Values.storkScheduler.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.storkScheduler.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+{{- end }}

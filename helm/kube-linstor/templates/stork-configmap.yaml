@@ -1,0 +1,28 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.stork.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-stork
+  namespace: {{ .Release.Namespace }}
+data:
+  policy.cfg: |-
+    {
+      "kind": "Policy",
+      "apiVersion": "v1",
+      "extenders": [
+        {
+          "urlPrefix": "http://{{ $fullName }}-stork.{{ .Release.Namespace }}.svc:8099",
+          "apiVersion": "v1beta1",
+          "filterVerb": "filter",
+          "prioritizeVerb": "prioritize",
+          "weight": 5,
+          "enableHttps": false,
+          "nodeCacheCapable": false
+        }
+      ]
+    }
+{{- end }}
+
+

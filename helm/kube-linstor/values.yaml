@@ -145,3 +145,47 @@ csi:
     #   - key: node-role.kubernetes.io/master
     #     operator: Exists
     #     effect: NoSchedule
+
+# ------------------------------------------------------------------------------
+# Stork is a scheduler extender plugin for Kubernetes which allows a storage
+# driver to give the Kubernetes scheduler hints about where to place a new pod
+# so that it is optimally located for storage performance
+# ------------------------------------------------------------------------------
+
+stork:
+  enabled: true
+  image:
+    repository: kvaps/stork
+    tag: configurable-endpoint
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: regsecret
+
+  replicaCount: 3
+
+  # nodeSelector:
+  #   node-role.kubernetes.io/master: ""
+  
+  # tolerations:
+  #   - key: node-role.kubernetes.io/master
+  #     operator: Exists
+  #     effect: NoSchedule
+
+storkScheduler:
+  enabled: true
+  image:
+    repository: gcr.io/google_containers/kube-scheduler-amd64
+    tag: v1.16.9
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: regsecret
+
+  replicaCount: 3
+
+  # nodeSelector:
+  #   node-role.kubernetes.io/master: ""
+  
+  # tolerations:
+  #   - key: node-role.kubernetes.io/master
+  #     operator: Exists
+  #     effect: NoSchedule

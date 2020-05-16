@@ -1,0 +1,78 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.stork.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ $fullName }}-stork
+  name: {{ $fullName }}-stork
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.stork.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-stork
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-stork
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.stork.image.pullSecrets | nindent 8 }}
+      containers:
+      - name: stork
+        image: {{ .Values.stork.image.repository }}:{{ .Values.stork.image.tag }}
+        imagePullPolicy: {{ .Values.stork.image.pullPolicy }}
+        command:
+        - /stork
+        - --driver=linstor
+        - --leader-elect=true
+        env:
+        - name: LS_ENDPOINT
+        {{- if not .Values.controller.ssl.enabled }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
+        - name: LS_USER_CERTIFICATE
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: {{ $fullName }}-client-tls
+        - name: LS_USER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: {{ $fullName }}-client-tls
+        - name: LS_ROOT_CA
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: {{ $fullName }}-client-tls
+        {{- end }}
+        ports:
+        - name: extender
+          containerPort: 8099
+        - name: webhook
+          containerPort: 443
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - {{ $fullName }}-stork
+              topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: {{ $fullName }}-stork
+      priorityClassName: system-node-critical
+      {{- with .Values.stork.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.stork.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+{{- end }}

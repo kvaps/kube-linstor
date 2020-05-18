@@ -32,11 +32,13 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 ## QuckStart
 
-Linstor consists of several components:
+Kube-Linstor consists of several components:
 
 * **Linstor-controller** - Controller is main control point for Linstor, it provides API for clients and communicates with satellites for creating and monitor DRBD-devices.
 * **Linstor-satellite** - Satellites run on every node, they listen and perform controller tasks. They operates directly with LVM and ZFS subsystems.
+* **Linstor-stunnel** - Stunnel is used to enable mutual SSL support for some components where it's not possible for some reason.
 * **Linstor-csi** - CSI driver provides compatibility level for adding Linstor support for Kubernetes.
+* **Linstor-stork** - Stork is a scheduler extender plugin for Kubernetes which allows a storage driver to give the Kubernetes scheduler hints about where to place a new pod so that it is optimally located for storage performance.
 
 #### Preparation
 
@@ -152,9 +154,13 @@ linstor n l | awk '/(PLAIN)/ { print "linstor n i m -p 3367 --communication-type
 
 * **[This project](LICENSE)** under **Apache License**
 * **[linstor-server]**, **[drbd]** and **[drbd-utils]** is **GPL** licensed by LINBIT
+* **[stunnel]** under **GNU GPL version 2** by Michał Trojnara
 * **[linstor-csi]** under **Apache License** by LINBIT
+* **[stork]** under **Apache License**
 
 [linstor-server]: https://github.com/LINBIT/linstor-server/blob/master/COPYING
 [drbd]: https://github.com/LINBIT/drbd-9.0/blob/master/COPY
 [drbd-utils]: https://github.com/LINBIT/drbd-utils/blob/master/COPYING
+[stunnel]: https://www.stunnel.org/COPYING.html
 [linstor-csi]: https://github.com/piraeusdatastore/linstor-csi/blob/master/LICENSE
+[stork]: https://github.com/libopenstorage/stork/blob/master/LICENSE

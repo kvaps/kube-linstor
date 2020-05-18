@@ -10,6 +10,8 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 | **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
 | **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
 | **[linstor-stunnel]**    | [![linstor-stunnel-status]](https://hub.docker.com/r/kvaps/linstor-stunnel)       |
+| **[linstor-csi]**        | [![linstor-csi-status]](https://hub.docker.com/r/kvaps/linstor-csi)               |
+| **[linstor-stork]**      | [![linstor-stork-status]](https://hub.docker.com/r/kvaps/linstor-stork)           |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-controller.svg
@@ -17,6 +19,10 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 [linstor-satellite-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-satellite.svg
 [linstor-stunnel]: dockerfiles/linstor-stunnel/Dockerfile
 [linstor-stunnel-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-stunnel.svg
+[linstor-csi]: dockerfiles/linstor-csi/Dockerfile
+[linstor-csi-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-csi.svg
+[linstor-stork]: dockerfiles/linstor-stork/Dockerfile
+[linstor-stork-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-stork.svg
 
 ## Requirements
 

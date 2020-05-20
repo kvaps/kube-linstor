@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: kvaps/linstor-controller
-    tag: v1.7.1
+    tag: v1.7.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -54,7 +54,7 @@ stunnel:
   enabled: true
   image:
     repository: kvaps/linstor-stunnel
-    tag: v1.7.1
+    tag: v1.7.1-1
     pullPolicy: IfNotPresent
 
 # ------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ satellite:
   enabled: true
   image:
     repository: kvaps/linstor-satellite
-    tag: v1.7.1
+    tag: v1.7.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -102,7 +102,7 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: kvaps/linstor-csi
-      tag: v1.7.1
+      tag: v1.7.1-1
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
@@ -156,7 +156,7 @@ stork:
   enabled: true
   image:
     repository: kvaps/linstor-stork
-    tag: v1.7.1
+    tag: v1.7.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

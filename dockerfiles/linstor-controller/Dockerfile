@@ -28,7 +28,7 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential debhelper git python3-all python3-setuptools help2man bash-completion docbook-xsl xsltproc
 
-ARG CLIENT_VERSION=1.1.0
+ARG CLIENT_VERSION=1.1.1
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/linstor-api-py /linstor-api-py
 WORKDIR /linstor-api-py

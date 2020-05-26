@@ -1,7 +1,4 @@
-# We forced to use stretch due OpenJDK 8
-# See: https://github.com/LINBIT/linstor-server/issues/123
-
-FROM debian:stretch as builder
+FROM debian:buster as builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
@@ -22,7 +19,7 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
-FROM debian:stretch as client-builder
+FROM debian:buster as client-builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
@@ -53,7 +50,7 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
-FROM debian:stretch
+FROM debian:buster
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install repos and system upgrade
@@ -68,6 +65,8 @@ COPY --from=client-builder /python-linstor_*_all.deb /linstor-client_*_all.deb /
 RUN apt-get update \
  && apt-get install -y default-jre-headless python3-all python3-natsort \
  && dpkg -i packages/*.deb \
+ && sed -i "s|'$| \"-Djdk.tls.acknowledgeCloseNotify=true\"'|" \
+      /usr/share/linstor-server/bin/Controller \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /config /logs \

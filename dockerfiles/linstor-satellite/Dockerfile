@@ -33,6 +33,8 @@ COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /pack
 RUN apt-get update \
  && apt-get install -y default-jre-headless drbd-utils thin-provisioning-tools \
  && dpkg -i packages/*.deb \
+ && sed -i "s|'$| \"-Djdk.tls.acknowledgeCloseNotify=true\"'|" \
+      /usr/share/linstor-server/bin/Satellite \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /config /logs

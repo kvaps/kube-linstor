@@ -27,6 +27,7 @@ spec:
         - |
           tmp="$(mktemp -u).p12"
           openssl pkcs12 -export -in /tls/satellite/tls.crt -inkey /tls/satellite/tls.key -out "$tmp" -name linstor-satellite -passin 'pass:linstor' -passout 'pass:linstor'
+          rm -f /config/ssl/keystore.jks /config/ssl/certificates.jks
           keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/controller/ca.crt -alias linstor-ca -destkeystore /config/ssl/certificates.jks
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/controller/tls.crt -alias linstor-controller -destkeystore /config/ssl/certificates.jks

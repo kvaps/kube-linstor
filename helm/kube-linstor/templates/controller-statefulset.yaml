@@ -33,6 +33,7 @@ spec:
         - |-
           tmp="$(mktemp -u).p12"
           openssl pkcs12 -export -in /tls/controller/tls.crt -inkey /tls/controller/tls.key -out "$tmp" -name linstor-controller -passin 'pass:linstor' -passout 'pass:linstor'
+          rm -f /config/ssl/keystore.jks /config/ssl/certificates.jks /config/ssl/trustore_client.jks
           keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
           {{- if .Values.controller.ssl.enabled }}
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor-client -destkeystore /config/ssl/trustore_client.jks

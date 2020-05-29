@@ -1,5 +1,3 @@
-# Better to use fresh distros since they are containing newer lvm
-
 FROM debian:buster as builder
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -19,6 +17,34 @@ RUN make debrelease \
 WORKDIR /linstor-server-${VERSION}
 RUN dpkg-buildpackage -us -uc
 
+# ------------------------------------------------------------------------------
+
+FROM debian:buster as utils-builder
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \
+ && apt-get -y upgrade \
+ && apt-get -y install build-essential debhelper git flex clitest xsltproc locales libxml2-utils po4a bash-completion dh-systemd docbook-xsl udev
+
+ARG UTILS_VERSION=9.13.1
+
+RUN git clone --recurse-submodules https://github.com/LINBIT/drbd-utils /drbd-utils
+WORKDIR /drbd-utils
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+RUN git checkout v${UTILS_VERSION} \
+ && ./autogen.sh \
+ && ./configure \
+ && make debrelease \
+ && mv drbd-utils-${UTILS_VERSION}.tar.gz ../drbd-utils_${UTILS_VERSION}.orig.tar.gz \
+ && tar -C / -xvf ../drbd-utils_${UTILS_VERSION}.orig.tar.gz
+WORKDIR /drbd-utils-${UTILS_VERSION}
+RUN dpkg-buildpackage -us -uc
+
+# ------------------------------------------------------------------------------
+
 FROM debian:buster
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -30,8 +56,9 @@ RUN apt-get -y update \
 
 # Install linstor-satellite
 COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
+COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /packages/
 RUN apt-get update \
- && apt-get install -y default-jre-headless drbd-utils thin-provisioning-tools \
+ && apt-get install -y default-jre-headless thin-provisioning-tools \
  && dpkg -i packages/*.deb \
  && sed -i "s|'$| \"-Djdk.tls.acknowledgeCloseNotify=true\"'|" \
       /usr/share/linstor-server/bin/Satellite \

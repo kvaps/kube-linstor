@@ -29,12 +29,9 @@ Generates linstor.toml config file
   connection_url = "{{ .Values.controller.db.connectionUrl }}"
 [http]
   port = {{ .Values.controller.port }}
-  {{- if or .Values.controller.ssl.enabled }}
-  listen_addr = "127.0.0.1"
-  {{ end }}
 {{- if or .Values.controller.ssl.enabled }}
 [https]
-  enabled = false
+  enabled = true
   port = {{ .Values.controller.ssl.port }}
   keystore = "/config/ssl/keystore.jks"
   keystore_password = "linstor"

@@ -9,7 +9,6 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 |:-------------------------|:----------------------------------------------------------------------------------|
 | **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
 | **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
-| **[linstor-stunnel]**    | [![linstor-stunnel-status]](https://hub.docker.com/r/kvaps/linstor-stunnel)       |
 | **[linstor-csi]**        | [![linstor-csi-status]](https://hub.docker.com/r/kvaps/linstor-csi)               |
 | **[linstor-stork]**      | [![linstor-stork-status]](https://hub.docker.com/r/kvaps/linstor-stork)           |
 
@@ -17,8 +16,6 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 [linstor-controller-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-controller.svg
 [linstor-satellite]: dockerfiles/linstor-controller/Dockerfile
 [linstor-satellite-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-satellite.svg
-[linstor-stunnel]: dockerfiles/linstor-stunnel/Dockerfile
-[linstor-stunnel-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-stunnel.svg
 [linstor-csi]: dockerfiles/linstor-csi/Dockerfile
 [linstor-csi-status]: https://img.shields.io/docker/cloud/build/kvaps/linstor-csi.svg
 [linstor-stork]: dockerfiles/linstor-stork/Dockerfile
@@ -36,7 +33,6 @@ Kube-Linstor consists of several components:
 
 * **Linstor-controller** - Controller is main control point for Linstor, it provides API for clients and communicates with satellites for creating and monitor DRBD-devices.
 * **Linstor-satellite** - Satellites run on every node, they listen and perform controller tasks. They operates directly with LVM and ZFS subsystems.
-* **Linstor-stunnel** - Stunnel is used to enable mutual SSL support for some components where it's not possible for some reason.
 * **Linstor-csi** - CSI driver provides compatibility level for adding Linstor support for Kubernetes.
 * **Linstor-stork** - Stork is a scheduler extender plugin for Kubernetes which allows a storage driver to give the Kubernetes scheduler hints about where to place a new pod so that it is optimally located for storage performance.
 

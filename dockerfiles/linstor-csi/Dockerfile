@@ -1,8 +1,8 @@
 FROM golang:1 as builder
 
-RUN git clone https://github.com/kvaps/linstor-csi/ /usr/local/go/linstor-csi/
+RUN git clone https://github.com/linbit/linstor-csi/ /usr/local/go/linstor-csi/
 RUN cd /usr/local/go/linstor-csi \
- && git checkout resize \
+ && git reset --hard v0.9.0 \
  && make -f container.mk staticrelease \
  && mv ./linstor-csi-linux-amd64 /
 

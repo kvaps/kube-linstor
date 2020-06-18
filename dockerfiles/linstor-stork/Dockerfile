@@ -4,14 +4,20 @@ RUN apt-get update \
       go-dep \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-RUN git clone --single-branch --branch linstor-configurable-endpoint \
-      https://github.com/kvaps/stork /go/src/github.com/libopenstorage/stork \
- && git clone --single-branch --branch fix-http2curl \
-      https://github.com/kvaps/golinstor /go/src/github.com/LINBIT/golinstor/
+
+RUN git clone https://github.com/LINBIT/stork /go/src/github.com/libopenstorage/stork \
+ && cd /go/src/github.com/libopenstorage/stork \
+ && git reset --hard v1.3.0-beta1-588-ge4b0eb24
+
+RUN rm -rf /go/src/github.com/LINBIT/golinstor \
+ && git clone https://github.com/kvaps/golinstor /go/src/github.com/LINBIT/golinstor \
+ && cd /go/src/github.com/LINBIT/golinstor \
+ && git reset --hard v0.26.0-3-gcbc5afd
 
 WORKDIR /go/src/github.com/libopenstorage/stork
 RUN cd cmd/stork && go get -d -u
 RUN cd cmd/storkctl && go get -d -u
+
 RUN make stork storkctl \
  && mv bin/stork bin/linux/storkctl /
 

@@ -29,7 +29,7 @@ spec:
         - --driver=linstor
         - --leader-elect=true
         env:
-        - name: LS_ENDPOINT
+        - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
         {{- else }}
@@ -55,16 +55,6 @@ spec:
           containerPort: 8099
         - name: webhook
           containerPort: 443
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: "app"
-                    operator: In
-                    values:
-                    - {{ $fullName }}-stork
-              topologyKey: "kubernetes.io/hostname"
       serviceAccountName: {{ $fullName }}-stork
       priorityClassName: system-node-critical
       {{- with .Values.stork.nodeSelector }}

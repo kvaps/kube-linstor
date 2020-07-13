@@ -7,11 +7,7 @@ RUN apt-get update \
 
 RUN git clone https://github.com/LINBIT/stork /go/src/github.com/libopenstorage/stork \
  && cd /go/src/github.com/libopenstorage/stork \
- && git reset --hard v1.3.0-beta1-615-g14b2aadf
-
-RUN git clone https://github.com/kvaps/golinstor /go/src/github.com/LINBIT/golinstor \
- && cd /go/src/github.com/LINBIT/golinstor \
- && git reset --hard v0.26.0-4-g7731c9f
+ && git reset --hard v1.3.0-beta1-628-g7398fc4e
 
 WORKDIR /go/src/github.com/libopenstorage/stork
 RUN cd cmd/stork \

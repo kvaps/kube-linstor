@@ -4,7 +4,7 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
 
-ARG VERSION=1.7.1
+ARG VERSION=1.7.2
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server

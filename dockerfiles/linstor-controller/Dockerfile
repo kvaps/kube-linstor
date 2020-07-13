@@ -4,7 +4,7 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
 
-ARG VERSION=1.7.1
+ARG VERSION=1.7.2
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server
@@ -25,7 +25,7 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential debhelper git python3-all python3-setuptools help2man bash-completion docbook-xsl xsltproc
 
-ARG CLIENT_VERSION=1.1.1
+ARG CLIENT_VERSION=1.1.2
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/linstor-api-py /linstor-api-py
 WORKDIR /linstor-api-py

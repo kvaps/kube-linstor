@@ -30,17 +30,19 @@ data:
      }
     }
   {{- end }}
-  {{- if .Values.satellite.ssl.enabled }}
   linstor_satellite.toml: |+
     [netcom]
+      {{- if not .Values.satellite.ssl.enabled }}
+      port={{ .Values.satellite.port }}
+      {{- else }}
       type="ssl"
-      port=3367
+      port={{ .Values.satellite.ssl.port }}
       server_certificate="/config/ssl/keystore.jks"
       trusted_certificates="/config/ssl/certificates.jks"
       key_password="linstor"
       keystore_password="linstor"
       truststore_password="linstor"
       ssl_protocol="TLSv1.2"
-  {{- end }}
+      {{- end }}
 {{- end }}
 {{- end }}

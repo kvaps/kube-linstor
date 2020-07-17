@@ -89,15 +89,19 @@ spec:
         - --logs=/logs
         - --config-directory=/config
         livenessProbe:
-          exec:
-            command:
-            - timeout
-            - "5"
-            - linstor
-            - controller
-            - version
+          httpGet:
+            path: /health
+            port: {{ .Values.controller.port }}
+            scheme: HTTP
           periodSeconds: 10
           initialDelaySeconds: 300
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.controller.port }}
+            scheme: HTTP
+          periodSeconds: 10
+          initialDelaySeconds: 5
         ports:
         - name: restapi
           containerPort: {{ .Values.controller.port }}

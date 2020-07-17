@@ -69,11 +69,28 @@ spec:
         imagePullPolicy: {{ .Values.satellite.image.pullPolicy }}
         securityContext:
           privileged: true
+        ports:
+        {{- if not .Values.satellite.ssl.enabled }}
+        - containerPort: {{ .Values.satellite.port }}
+          hostPort: {{ .Values.satellite.port }}
+          protocol: TCP
+        {{- else }}
+        - containerPort: {{ .Values.satellite.ssl.port }}
+          hostPort: {{ .Values.satellite.ssl.port }}
+          protocol: TCP
+        {{- end }}
+        readinessProbe:
+          tcpSocket:
+            {{- if not .Values.satellite.ssl.enabled }}
+            port: {{ .Values.satellite.port }}
+            {{- else }}
+            port: {{ .Values.satellite.ssl.port }}
+            {{- end }}
+          periodSeconds: 10
+          initialDelaySeconds: 5
         volumeMounts:
-        {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
         - name: config
           mountPath: /config
-        {{- end }}
         {{- if .Values.satellite.ssl.enabled }}
         - name: config-ssl
           mountPath: /config/ssl
@@ -144,11 +161,9 @@ spec:
       - name: run-lock-lvm
         hostPath:
           path: /run/lock/lvm
-      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
       - name: config
         configMap:
           name: {{ $fullName }}-satellite
-      {{- end }}
       {{- if .Values.satellite.ssl.enabled }}
       - name: config-ssl
         emptyDir: {}

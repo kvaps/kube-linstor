@@ -58,8 +58,10 @@ satellite:
     pullSecrets:
       - name: regsecret
 
+  port: 3366
   ssl:
     enabled: true
+    port: 3367
 
   # Oerwrite drbd.conf and global_common.conf files. This option will enable
   # usage-count=no and udev-always-use-vnr options by default

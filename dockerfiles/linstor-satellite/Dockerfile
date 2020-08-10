@@ -78,7 +78,7 @@ RUN apt-get update \
 # Install additional tools
 RUN sed -i '/^deb / s/main/main contrib/' /etc/apt/sources.list \
  && apt-get update \
- && apt-get install --no-install-recommends -y zfsutils-linux cryptsetup nvme-cli \
+ && apt-get install --no-install-recommends -y zfsutils-linux cryptsetup nvme-cli zstd socat \
  && apt-get download lvm2 \
  && dpkg --unpack lvm2*.deb \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \

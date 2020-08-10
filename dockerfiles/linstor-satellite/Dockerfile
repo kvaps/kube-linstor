@@ -50,7 +50,8 @@ RUN git checkout v${THIN_SEND_RECV_VERSION} \
  && make debrelease \
  && mv thin-send-recv-${THIN_SEND_RECV_VERSION}.tar.gz ../thin-send-recv_${THIN_SEND_RECV_VERSION}.orig.tar.gz \
  && tar -C / -xvf ../thin-send-recv_${THIN_SEND_RECV_VERSION}.orig.tar.gz
-
+WORKDIR /thin-send-recv-${THIN_SEND_RECV_VERSION}
+RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
@@ -65,7 +66,7 @@ RUN apt-get -y update \
 
 # Install linstor-satellite
 COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
-COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /packages/
+COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /thin-send-recv_*_amd64.deb /packages/
 RUN apt-get update \
  && apt-get install -y default-jre-headless thin-provisioning-tools \
  && dpkg -i packages/*.deb \

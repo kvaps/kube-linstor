@@ -89,17 +89,23 @@ spec:
         - --logs=/logs
         - --config-directory=/config
         livenessProbe:
-          httpGet:
-            path: /health
-            port: {{ .Values.controller.port }}
-            scheme: HTTP
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - controller
+            - version
           periodSeconds: 10
           initialDelaySeconds: 300
         readinessProbe:
-          httpGet:
-            path: /health
-            port: {{ .Values.controller.port }}
-            scheme: HTTP
+          exec:
+            command:
+            - timeout
+            - "5"
+            - linstor
+            - controller
+            - version
           periodSeconds: 10
           initialDelaySeconds: 5
         ports:

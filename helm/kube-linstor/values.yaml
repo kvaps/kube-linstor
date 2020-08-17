@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-controller
-    tag: v1.8.0-rc1
+    tag: v1.8.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -53,7 +53,7 @@ satellite:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-satellite
-    tag: v1.8.0-rc1
+    tag: v1.8.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -91,7 +91,7 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: docker.io/kvaps/linstor-csi
-      tag: v1.8.0-rc1
+      tag: v1.8.0
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
@@ -145,7 +145,7 @@ stork:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-stork
-    tag: v1.8.0-rc1
+    tag: v1.8.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

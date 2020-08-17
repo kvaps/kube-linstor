@@ -4,18 +4,18 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
 
-ARG VERSION=1.8.0-rc1
+ARG VERSION=1.8.0
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server
 RUN git checkout v${VERSION}
 
-RUN make debrelease FORCE=1 \
- && mv "linstor-server-$(echo ${VERSION} | sed 's/-/./g').tar.gz" "/linstor-server_$(echo ${VERSION} | sed 's/-/~/g').orig.tar.gz" \
- && tar -C / -xvf /linstor-server_$(echo ${VERSION} | sed 's/-/~/g').orig.tar.gz
+RUN make debrelease \
+ && mv linstor-server-${VERSION}.tar.gz /linstor-server_${VERSION}.orig.tar.gz \
+ && tar -C / -xvf /linstor-server_${VERSION}.orig.tar.gz
 
-RUN cd /linstor-server-$(echo ${VERSION} | sed 's/-/./g') \
- && dpkg-buildpackage -us -uc
+WORKDIR /linstor-server-${VERSION}
+RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential debhelper git python3-all python3-setuptools help2man bash-completion docbook-xsl xsltproc
 
-ARG CLIENT_VERSION=1.2.0
+ARG CLIENT_VERSION=1.3.0
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/linstor-api-py /linstor-api-py
 WORKDIR /linstor-api-py

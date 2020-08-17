@@ -4,18 +4,18 @@ RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
 
-ARG VERSION=1.8.0-rc1
+ARG VERSION=1.8.0
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server
 RUN git checkout v${VERSION}
 
-RUN make debrelease FORCE=1 \
- && mv "linstor-server-$(echo ${VERSION} | sed 's/-/./g').tar.gz" "/linstor-server_$(echo ${VERSION} | sed 's/-/~/g').orig.tar.gz" \
- && tar -C / -xvf /linstor-server_$(echo ${VERSION} | sed 's/-/~/g').orig.tar.gz
+RUN make debrelease \
+ && mv linstor-server-${VERSION}.tar.gz /linstor-server_${VERSION}.orig.tar.gz \
+ && tar -C / -xvf /linstor-server_${VERSION}.orig.tar.gz
 
-RUN cd /linstor-server-$(echo ${VERSION} | sed 's/-/./g') \
- && dpkg-buildpackage -us -uc
+WORKDIR /linstor-server-${VERSION}
+RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
@@ -44,8 +44,8 @@ WORKDIR /drbd-utils-${UTILS_VERSION}
 RUN dpkg-buildpackage -us -uc
 
 ARG THIN_SEND_RECV_VERSION=0.23
-RUN git clone --recurse-submodules https://github.com/LINBIT/thin-send-recv /thin-send-recv 
-WORKDIR /thin-send-recv 
+RUN git clone --recurse-submodules https://github.com/LINBIT/thin-send-recv /thin-send-recv
+WORKDIR /thin-send-recv
 RUN git checkout v${THIN_SEND_RECV_VERSION} \
  && make debrelease \
  && mv thin-send-recv-${THIN_SEND_RECV_VERSION}.tar.gz ../thin-send-recv_${THIN_SEND_RECV_VERSION}.orig.tar.gz \

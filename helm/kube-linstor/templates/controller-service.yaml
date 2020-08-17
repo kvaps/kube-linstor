@@ -6,6 +6,10 @@ kind: Service
 metadata:
   name: {{ $fullName }}-controller
   namespace: {{ .Release.Namespace }}
+  {{- with .Values.controller.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   ports:
   - name: restapi

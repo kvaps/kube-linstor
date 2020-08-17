@@ -17,6 +17,12 @@ controller:
     enabled: true
     port: 3371
 
+  service:
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "3370"
+      prometheus.io/scrape: "true"
+
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""
   

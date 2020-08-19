@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-controller
-    tag: v1.8.0
+    tag: v1.8.0-2
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

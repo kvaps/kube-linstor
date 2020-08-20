@@ -19,7 +19,7 @@ controller:
 
   service:
     annotations:
-      prometheus.io/path: "/metrics"
+      prometheus.io/path: "/metrics?error_reports=false"
       prometheus.io/port: "3370"
       prometheus.io/scrape: "true"
 

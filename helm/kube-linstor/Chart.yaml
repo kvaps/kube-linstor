@@ -1,6 +1,7 @@
 name: kube-linstor
 description: Linstor Controller and Satellites for Kubernetes
-version: v1.7.2
+version: 1.7.2
+appVersion: 1.7.2
 keywords:
   - linstor
   - drbd

@@ -1,5 +1,5 @@
-name: kube-linstor
-description: Linstor Controller and Satellites for Kubernetes
+name: linstor
+description: Containerized LINSTOR SDS for Kubernetes, ready for production use,
 version: 1.8.0
 appVersion: 1.8.0
 keywords:

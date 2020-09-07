@@ -115,7 +115,7 @@ helm repo add kvaps https://kvaps.github.io/charts
   curl -LO https://github.com/kvaps/kube-linstor/raw/master/examples/linstor.yaml
 
   # install release
-  helm install linstor kvaps/kube-linstor --version 1.7.2 \
+  helm install linstor kvaps/linstor --version 1.7.2 \
     --namespace linstor \
     -f linstor.yaml
   ```

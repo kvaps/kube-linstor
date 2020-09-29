@@ -1,10 +1,11 @@
 FROM debian:buster as builder
+
+ARG VERSION=1.9.0
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
-
-ARG VERSION=1.8.0
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server
@@ -20,12 +21,13 @@ RUN dpkg-buildpackage -us -uc
 # ------------------------------------------------------------------------------
 
 FROM debian:buster as client-builder
+
+ARG CLIENT_VERSION=1.4.0
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential debhelper git python3-all python3-setuptools help2man bash-completion docbook-xsl xsltproc
-
-ARG CLIENT_VERSION=1.3.0
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/linstor-api-py /linstor-api-py
 WORKDIR /linstor-api-py
@@ -51,17 +53,18 @@ RUN dpkg-buildpackage -us -uc
 # ------------------------------------------------------------------------------
 
 FROM debian:buster
-ENV DEBIAN_FRONTEND noninteractive
+
+COPY --from=builder /linstor-common_*_all.deb /linstor-controller_*_all.deb /packages/
+COPY --from=client-builder /python-linstor_*_all.deb /linstor-client_*_all.deb /packages/
 
 # Install repos and system upgrade
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update \
  && apt-get -y upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
 # Install linstor-controller
-COPY --from=builder /linstor-common_*_all.deb /linstor-controller_*_all.deb /packages/
-COPY --from=client-builder /python-linstor_*_all.deb /linstor-client_*_all.deb /packages/
 RUN apt-get update \
  && apt-get install -y default-jre-headless python3-all python3-natsort \
  && dpkg -i packages/*.deb \

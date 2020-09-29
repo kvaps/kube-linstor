@@ -1,4 +1,4 @@
-FROM golang:1 as builder
+FROM golang:1.15 as builder
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       go-dep \
@@ -7,7 +7,7 @@ RUN apt-get update \
 
 RUN git clone https://github.com/LINBIT/stork /go/src/github.com/libopenstorage/stork \
  && cd /go/src/github.com/libopenstorage/stork \
- && git reset --hard v1.3.0-beta1-628-g7398fc4e
+ && git reset --hard 274a3ee169db26786c5cca6c4bf4d9a9b54f31fc
 
 WORKDIR /go/src/github.com/libopenstorage/stork
 RUN cd cmd/stork \

@@ -1,10 +1,11 @@
 FROM debian:buster as builder
+
+ARG VERSION=1.9.0
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential git default-jdk-headless dh-systemd gradle python3-all
-
-ARG VERSION=1.8.0
 
 RUN git clone https://github.com/LINBIT/linstor-server.git /linstor-server
 WORKDIR /linstor-server
@@ -20,12 +21,13 @@ RUN dpkg-buildpackage -us -uc
 # ------------------------------------------------------------------------------
 
 FROM debian:buster as utils-builder
+
+ARG UTILS_VERSION=9.15.0
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get -y upgrade \
  && apt-get -y install build-essential debhelper git flex clitest xsltproc locales libxml2-utils po4a bash-completion dh-systemd docbook-xsl udev
-
-ARG UTILS_VERSION=9.13.1
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/drbd-utils /drbd-utils
 WORKDIR /drbd-utils
@@ -56,17 +58,18 @@ RUN dpkg-buildpackage -us -uc
 # ------------------------------------------------------------------------------
 
 FROM debian:buster
-ENV DEBIAN_FRONTEND noninteractive
+
+COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
+COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /thin-send-recv_*_amd64.deb /packages/
 
 # Install repos and system upgrade
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update \
  && apt-get -y upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
 # Install linstor-satellite
-COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
-COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /thin-send-recv_*_amd64.deb /packages/
 RUN apt-get update \
  && apt-get install -y default-jre-headless thin-provisioning-tools \
  && dpkg -i packages/*.deb \

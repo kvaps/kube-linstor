@@ -1,4 +1,4 @@
-FROM golang:1 as builder
+FROM golang:1.15 as builder
 
 RUN git clone https://github.com/linbit/linstor-csi/ /usr/local/go/linstor-csi/ \
  && cd /usr/local/go/linstor-csi \

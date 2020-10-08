@@ -5,21 +5,21 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 ## Images
 
 
-| Image                    | Build Status                                                                      |
-|:-------------------------|:----------------------------------------------------------------------------------|
-| **[linstor-controller]** | [![linstor-controller-status]](https://hub.docker.com/r/kvaps/linstor-controller) |
-| **[linstor-satellite]**  | [![linstor-satellite-status]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
-| **[linstor-csi]**        | [![linstor-csi-status]](https://hub.docker.com/r/kvaps/linstor-csi)               |
-| **[linstor-stork]**      | [![linstor-stork-status]](https://hub.docker.com/r/kvaps/linstor-stork)           |
+| Image                    | Latest Tag                                                                         |
+|:-------------------------|:-----------------------------------------------------------------------------------|
+| **[linstor-controller]** | [![linstor-controller-version]](https://hub.docker.com/r/kvaps/linstor-controller) |
+| **[linstor-satellite]**  | [![linstor-satellite-version]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
+| **[linstor-csi]**        | [![linstor-csi-version]](https://hub.docker.com/r/kvaps/linstor-csi)               |
+| **[linstor-stork]**      | [![linstor-stork-version]](https://hub.docker.com/r/kvaps/linstor-stork)           |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
-[linstor-controller-status]: https://img.shields.io/docker/v/kvaps/linstor-controller.svg?sort=semver
+[linstor-controller-version]: https://img.shields.io/docker/v/kvaps/linstor-controller.svg?sort=semver
 [linstor-satellite]: dockerfiles/linstor-controller/Dockerfile
-[linstor-satellite-status]: https://img.shields.io/docker/v/kvaps/linstor-satellite.svg?sort=semver
+[linstor-satellite-version]: https://img.shields.io/docker/v/kvaps/linstor-satellite.svg?sort=semver
 [linstor-csi]: dockerfiles/linstor-csi/Dockerfile
-[linstor-csi-status]: https://img.shields.io/docker/v/kvaps/linstor-csi.svg?sort=semver
+[linstor-csi-version]: https://img.shields.io/docker/v/kvaps/linstor-csi.svg?sort=semver
 [linstor-stork]: dockerfiles/linstor-stork/Dockerfile
-[linstor-stork-status]: https://img.shields.io/docker/v/kvaps/linstor-stork.svg?sort=semver
+[linstor-stork-version]: https://img.shields.io/docker/v/kvaps/linstor-stork.svg?sort=semver
 
 ## Requirements
 
@@ -166,13 +166,11 @@ linstor n l | awk '/(PLAIN)/ { print "linstor n i m -p 3367 --communication-type
 
 * **[This project](LICENSE)** under **Apache License**
 * **[linstor-server]**, **[drbd]** and **[drbd-utils]** is **GPL** licensed by LINBIT
-* **[stunnel]** under **GNU GPL version 2** by Michał Trojnara
 * **[linstor-csi]** under **Apache License** by LINBIT
 * **[stork]** under **Apache License**
 
 [linstor-server]: https://github.com/LINBIT/linstor-server/blob/master/COPYING
 [drbd]: https://github.com/LINBIT/drbd-9.0/blob/master/COPY
 [drbd-utils]: https://github.com/LINBIT/drbd-utils/blob/master/COPYING
-[stunnel]: https://www.stunnel.org/COPYING.html
 [linstor-csi]: https://github.com/piraeusdatastore/linstor-csi/blob/master/LICENSE
 [stork]: https://github.com/libopenstorage/stork/blob/master/LICENSE

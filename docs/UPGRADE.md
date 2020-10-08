@@ -4,7 +4,7 @@
 If you're using stolon as back-end for your LINSTOR installation you can easily perform the backup of your database:
    
 ```bash
-kubectl exec -n linstor linstor-db-stolon-keeper-0 -- \
+kubectl exec -n linstor sts/linstor-db-stolon-keeper -- \
   sh -c 'PGPASSWORD=$(cat $STKEEPER_PG_SU_PASSWORDFILE) pg_dump -c -h linstor-db-stolon-proxy -U stolon linstor | gzip' \
   > linstor-backup.sql.gz
 ```
@@ -19,13 +19,19 @@ Anyway you can perform upgrade by simple replacing resources in your Kubernetes 
    
 ---
 
+## Upgrading helm repo index
+
+  ```
+  helm repo update
+  ```
+
 ## Upgrading stolon
 
 
 ***Helm way:***
 
   ```bash
-  helm upgrade linstor-db stable/stolon --namespace linstor -f examples/linstor-db.yaml
+  helm upgrade linstor-db kvaps/stolon --namespace linstor -f linstor-db.yaml
   ```
 
 ***Templated manifests:***
@@ -41,8 +47,7 @@ Anyway you can perform upgrade by simple replacing resources in your Kubernetes 
 ***Helm way:***
 
   ```bash
-  git pull # download latest changes
-  helm upgrade linstor helm/kube-linstor --namespace linstor -f examples/linstor.yaml
+  helm upgrade linstor kvaps/linstor --version 1.9.0 --namespace linstor -f linstor.yaml
   ```
 
 ***Templated manifests:***
@@ -51,6 +56,7 @@ Anyway you can perform upgrade by simple replacing resources in your Kubernetes 
 
  - Create new LINSTOR resources. check the controller log, it should perform the schema migration for the database.
 
+---
 
 If you're upgrading from old version you can see your nodes in `Offline` state, that's because latest version enables mutual ssl authentification for the linstor-satellites.
 
@@ -58,3 +64,9 @@ You can easily fix that by executing this command in your linstor-controller pod
 ```bash
 linstor n l | awk '/(PLAIN)/ { print "linstor n i m -p 3367 --communication-type SSL " $2 " default" }' | sh -ex
 ```
+---
+
+v1.9.0 release also introduce shorter release name: `linstor-` instead of `linstor-linstor-`, this change shouldn't break anything, however it will regenerate SSL certificates.
+If you are using LINSTOR API externally, you might need to update the client certificates or keep the old release name prefix by specifying `--set fullnameOverride=linstor-linstor` option.
+
+See [#18](https://github.com/kvaps/kube-linstor/issues/18) for more details.

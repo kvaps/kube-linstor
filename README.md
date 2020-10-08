@@ -40,7 +40,7 @@ Kube-Linstor consists of several components:
 
 [Install Helm](https://helm.sh/docs/intro/).
 
-> **_NOTE:_**  
+> **_NOTE:_**
 > Commands below provided for Helm v3 but Helm v2 is also supported.  
 > You can use `helm template` instead of `helm install`, this is also working as well.
 
@@ -60,7 +60,7 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/master/examples/linstor-db.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.9.0/examples/linstor-db.yaml
 
   # install release
   helm install linstor-db kvaps/stolon \
@@ -68,7 +68,10 @@ helm repo add kvaps https://kvaps.github.io/charts
     -f linstor-db.yaml
   ```
 
-  > **_NOTE:_**  
+  > **_NOTE:_**
+  > The current example will deploy stolon cluster on your Kubernetes-master nodes
+
+  > **_NOTE:_**
   > In case of update your stolon add `--set job.autoCreateCluster=false` flag to not reinitialisate your cluster.
 
 * Create Persistent Volumes:
@@ -95,7 +98,7 @@ helm repo add kvaps https://kvaps.github.io/charts
 
 * Connect to database:
   ```bash
-  kubectl exec -ti -n linstor linstor-db-stolon-keeper-0 bash
+  kubectl exec -ti -n linstor sts/linstor-db-stolon-keeper -- bash
   PGPASSWORD=$(cat $STKEEPER_PG_SU_PASSWORDFILE) psql -h linstor-db-stolon-proxy -U stolon postgres
   ```
 
@@ -112,7 +115,7 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/master/examples/linstor.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.9.0/examples/linstor.yaml
 
   # install release
   helm install linstor kvaps/linstor --version 1.9.0 \
@@ -120,12 +123,15 @@ helm repo add kvaps https://kvaps.github.io/charts
     -f linstor.yaml
   ```
 
+  > **_NOTE:_**
+  > The current example will deploy linstor- and csi-controllers on your Kubernetes-master nodes and satellites on all nodes in the cluster.
+
 ## Usage
 
 You can get interactive linstor shell by simple exec into **linstor-controller** container:
 
 ```bash
-kubectl exec -ti -n linstor linstor-linstor-controller-0 -- linstor
+kubectl exec -ti -n linstor sts/linstor-controller -- linstor
 ```
 
 Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) for define nodes and create new resources.
@@ -143,19 +149,17 @@ linstor node create alpha 1.2.3.4 --communication-type SSL
 If you want to have external access, you need to download certificates for linstor client:
 
 ```bash
-kubectl get secrets --namespace linstor linstor-linstor-client-tls \
+kubectl get secrets --namespace linstor linstor-client-tls \
   -o go-template='{{ range $k, $v := .data }}{{ $v | base64decode }}{{ end }}'
 ```
 
-Then follow [official linstor documentation](https://www.linbit.com/drbd-user-guide/users-guide-linstor/#s-rest-api-https-restricted-client) to configure client.
+Then follow [official linstor documentation](https://www.linbit.com/drbd-user-guide/users-guide-linstor/#s-rest-api-https-restricted-client) to configure the client.
 
-#### Enable SSL for existing nodes
-
-If you're switching your setup from PLAIN to SSL, this simple command will reconfigure all your nodes:
-
-```bash
-linstor n l | awk '/(PLAIN)/ { print "linstor n i m -p 3367 --communication-type SSL " $2 " default" }' | sh -ex
-```
+> **_NOTE:_**
+> v1.9.0 release also introduce shorter release name: `linstor-` instead of `linstor-linstor-`, this change shouldn't break anything, however it will regenerate SSL certificates.
+If you are using LINSTOR API externally, you might need to update the client certificates or keep the old release name prefix by specifying `--set fullnameOverride=linstor-linstor` option.
+>
+> See [#18](https://github.com/kvaps/kube-linstor/issues/18) for more details.
 
 ## Additional Information
 

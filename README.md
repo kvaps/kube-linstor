@@ -24,7 +24,7 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 ## Requirements
 
 * Working Kubernetes cluster (`v1.17` or higher).
-* DRBD9 kernel module installed on each sattelite node.
+* DRBD9 kernel module installed on each satellite node.
 * PostgeSQL database / etcd or any other backing store for redundancy.
 
 ## QuckStart
@@ -38,7 +38,7 @@ Kube-Linstor consists of several components:
 
 #### Preparation
 
-[Install Helm](https://helm.sh/docs/intro/) and clone this repository, then cd into it.
+[Install Helm](https://helm.sh/docs/intro/).
 
 > **_NOTE:_**  
 > Commands below provided for Helm v3 but Helm v2 is also supported.  
@@ -49,13 +49,23 @@ Create `linstor` namespace.
 kubectl create ns linstor
 ```
 
+Install Helm repository:
+```
+helm repo add kvaps https://kvaps.github.io/charts
+```
+
 #### Database
 
-* Install [stolon](https://github.com/helm/charts/tree/master/stable/stolon) chart:
+* Install [stolon](https://github.com/kvaps/stolon-chart) chart:
 
   ```bash
-  helm repo add stable https://kubernetes-charts.storage.googleapis.com
-  helm install linstor-db stable/stolon --namespace linstor -f examples/linstor-db.yaml
+  # download example values
+  curl -LO https://github.com/kvaps/kube-linstor/raw/master/examples/linstor-db.yaml
+
+  # install release
+  helm install linstor-db kvaps/stolon \
+    --namespace linstor \
+    -f linstor-db.yaml
   ```
 
   > **_NOTE:_**  
@@ -63,20 +73,20 @@ kubectl create ns linstor
 
 * Create Persistent Volumes:
   ```bash
-  helm install \
-    --set node=node1,path=/var/lib/linstor-db \
-    data-linstor-db-stolon-keeper-0 \
-    helm/pv-hostpath --namespace linstor
+  helm install data-linstor-db-stolon-keeper-0 kvaps/pv-hostpath \
+    --namespace linstor \
+    --set path=/var/lib/linstor-db \
+    --set node=node1
 
-  helm install \
-    --set node=node2,path=/var/lib/linstor-db \
-    data-linstor-db-stolon-keeper-1 \
-    helm/pv-hostpath --namespace linstor
+  helm install data-linstor-db-stolon-keeper-1 kvaps/pv-hostpath \
+    --namespace linstor \
+    --set path=/var/lib/linstor-db \
+    --set node=node2
 
-  helm install \
-    --set node=node3,path=/var/lib/linstor-db \
-    data-linstor-db-stolon-keeper-2 \
-    helm/pv-hostpath --namespace linstor
+  helm install data-linstor-db-stolon-keeper-2 kvaps/pv-hostpath \
+    --namespace linstor \
+    --set path=/var/lib/linstor-db \
+    --set node=node3
   ```
 
   Parameters `name` and `namespace` **must match** the PVC's name and namespace of your database, `node` should match exact node name.
@@ -101,7 +111,13 @@ kubectl create ns linstor
 * Install kube-linstor chart:
 
   ```bash
-  helm install linstor helm/kube-linstor --namespace linstor -f examples/linstor.yaml
+  # download example values
+  curl -LO https://github.com/kvaps/kube-linstor/raw/master/examples/linstor.yaml
+
+  # install release
+  helm install linstor kvaps/linstor --version 1.9.0 \
+    --namespace linstor \
+    -f linstor.yaml
   ```
 
 ## Usage

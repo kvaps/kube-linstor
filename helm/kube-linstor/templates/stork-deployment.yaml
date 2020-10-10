@@ -27,6 +27,7 @@ spec:
         command:
         - /stork
         - --driver=linstor
+        - --health-monitor=false
         - --leader-elect=true
         env:
         - name: LS_CONTROLLERS

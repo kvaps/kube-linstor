@@ -47,7 +47,7 @@ Anyway you can perform upgrade by simple replacing resources in your Kubernetes 
 ***Helm way:***
 
   ```bash
-  helm upgrade linstor kvaps/linstor --version 1.9.0 --namespace linstor -f linstor.yaml
+  helm upgrade linstor kvaps/linstor --version 1.10.0 --namespace linstor -f linstor.yaml
   ```
 
 ***Templated manifests:***

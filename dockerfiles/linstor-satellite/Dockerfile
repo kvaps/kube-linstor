@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.9.0
+ARG VERSION=1.10.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -45,7 +45,7 @@ RUN git checkout v${UTILS_VERSION} \
 WORKDIR /drbd-utils-${UTILS_VERSION}
 RUN dpkg-buildpackage -us -uc
 
-ARG THIN_SEND_RECV_VERSION=0.23
+ARG THIN_SEND_RECV_VERSION=0.24
 RUN git clone --recurse-submodules https://github.com/LINBIT/thin-send-recv /thin-send-recv
 WORKDIR /thin-send-recv
 RUN git checkout v${THIN_SEND_RECV_VERSION} \

@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-controller
-    tag: v1.9.0
+    tag: v1.10.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -16,6 +16,8 @@ controller:
   ssl:
     enabled: true
     port: 3371
+
+  #hostNetwork: true
 
   service:
     annotations:
@@ -59,7 +61,7 @@ satellite:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-satellite
-    tag: v1.9.0
+    tag: v1.10.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -97,23 +99,23 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: docker.io/kvaps/linstor-csi
-      tag: v1.9.0
+      tag: v1.10.0
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: quay.io/k8scsi/csi-provisioner
-      tag: v2.0.2
+      tag: v2.0.4
       pullPolicy: IfNotPresent
     csiAttacher:
       repository: quay.io/k8scsi/csi-attacher
-      tag: v3.0.0
+      tag: v3.0.2
       pullPolicy: IfNotPresent
     csiResizer:
       repository: quay.io/k8scsi/csi-resizer
-      tag: v1.0.0
+      tag: v1.0.1
       pullPolicy: IfNotPresent
     csiSnapshotter:
       repository: quay.io/k8scsi/csi-snapshotter
-      tag: v3.0.0
+      tag: v3.0.2
       pullPolicy: IfNotPresent
     csiNodeDriverRegistrar:
       repository: quay.io/k8scsi/csi-node-driver-registrar
@@ -151,7 +153,7 @@ stork:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-stork
-    tag: v1.9.0
+    tag: v1.10.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

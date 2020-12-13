@@ -31,8 +31,8 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 Kube-Linstor consists of several components:
 
-* **Linstor-controller** - Controller is main control point for Linstor, it provides API for clients and communicates with satellites for creating and monitor DRBD-devices.
-* **Linstor-satellite** - Satellites run on every node, they listen and perform controller tasks. They operates directly with LVM and ZFS subsystems.
+* **Linstor-controller** - Controller is the main control point for Linstor. It provides an API for clients and communicates with satellites for creating and monitoring DRBD-devices.
+* **Linstor-satellite** - Satellites run on every node. They listen and perform controller tasks, and operate directly with LVM and ZFS subsystems.
 * **Linstor-csi** - CSI driver provides compatibility level for adding Linstor support for Kubernetes.
 * **Linstor-stork** - Stork is a scheduler extender plugin for Kubernetes which allows a storage driver to give the Kubernetes scheduler hints about where to place a new pod so that it is optimally located for storage performance.
 

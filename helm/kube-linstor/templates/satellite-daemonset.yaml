@@ -102,6 +102,8 @@ spec:
           mountPath: /etc/drbd.d
         - name: var-lib-drbd
           mountPath: /var/lib/drbd
+        - name: var-lib-linstor
+          mountPath: /var/lib/linstor
         - name: var-lib-linstor-d
           mountPath: /var/lib/linstor.d
         - name: lib-modules
@@ -143,6 +145,9 @@ spec:
       - name: var-lib-drbd
         hostPath:
           path: /var/lib/drbd
+      - name: var-lib-linstor
+        hostPath:
+          path: /var/lib/linstor
       - name: var-lib-linstor-d
         hostPath:
           path: /var/lib/linstor.d

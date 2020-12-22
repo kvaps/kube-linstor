@@ -4,13 +4,13 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 ## Images
 
-
-| Image                    | Latest Tag                                                                         |
-|:-------------------------|:-----------------------------------------------------------------------------------|
-| **[linstor-controller]** | [![linstor-controller-version]](https://hub.docker.com/r/kvaps/linstor-controller) |
-| **[linstor-satellite]**  | [![linstor-satellite-version]](https://hub.docker.com/r/kvaps/linstor-satellite)   |
-| **[linstor-csi]**        | [![linstor-csi-version]](https://hub.docker.com/r/kvaps/linstor-csi)               |
-| **[linstor-stork]**      | [![linstor-stork-version]](https://hub.docker.com/r/kvaps/linstor-stork)           |
+| Image                            | Latest Tag                                                                               |
+|:---------------------------------|:-----------------------------------------------------------------------------------------|
+| **[linstor-controller]**         | [![linstor-controller-version]](https://hub.docker.com/r/kvaps/linstor-controller)       |
+| **[linstor-satellite]**          | [![linstor-satellite-version]](https://hub.docker.com/r/kvaps/linstor-satellite)         |
+| **[linstor-csi]**                | [![linstor-csi-version]](https://hub.docker.com/r/kvaps/linstor-csi)                     |
+| **[linstor-stork]**              | [![linstor-stork-version]](https://hub.docker.com/r/kvaps/linstor-stork)                 |
+| **[linstor-ha-controller]**      | [![linstor-ha-controller-version]](https://hub.docker.com/r/kvaps/linstor-ha-controller) |
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-version]: https://img.shields.io/docker/v/kvaps/linstor-controller.svg?sort=semver
@@ -20,6 +20,8 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 [linstor-csi-version]: https://img.shields.io/docker/v/kvaps/linstor-csi.svg?sort=semver
 [linstor-stork]: dockerfiles/linstor-stork/Dockerfile
 [linstor-stork-version]: https://img.shields.io/docker/v/kvaps/linstor-stork.svg?sort=semver
+[linstor-stork]: dockerfiles/linstor-ha-controller/Dockerfile
+[linstor-stork-version]: https://img.shields.io/docker/v/kvaps/linstor-ha-controller.svg?sort=semver
 
 ## Requirements
 

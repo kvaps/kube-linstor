@@ -5,15 +5,21 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/LINBIT/stork /go/src/github.com/libopenstorage/stork \
+RUN git clone https://github.com/libopenstorage/stork /go/src/github.com/libopenstorage/stork \
  && cd /go/src/github.com/libopenstorage/stork \
- && git reset --hard 274a3ee169db26786c5cca6c4bf4d9a9b54f31fc
+ && git reset --hard v2.6.1
+# && rm -f Gopkg.lock Gopkg.toml \
+# && go mod init
 
+RUN GO111MODULE=on go get -u -d github.com/libopenstorage/stork@v2.6.1
 WORKDIR /go/src/github.com/libopenstorage/stork
-RUN cd cmd/stork \
- && go get -d -u
-RUN cd cmd/storkctl \
- && go get -d -u
+
+#RUN cd cmd/stork \
+# && go get -d -u
+#RUN cd cmd/storkctl \
+# && go get -d -u
+
+RUN make vendor
 
 RUN make stork storkctl \
  && mv bin/stork bin/linux/storkctl /

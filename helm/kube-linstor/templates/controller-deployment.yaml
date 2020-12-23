@@ -13,7 +13,6 @@ spec:
   selector:
     matchLabels:
       app: {{ $fullName }}-controller
-  serviceName: {{ $fullName }}-controller
   template:
     metadata:
       labels:

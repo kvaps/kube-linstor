@@ -2,16 +2,15 @@
 {{- if .Values.csi.enabled }}
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: {{ $fullName }}-csi-controller
 spec:
-  replicas: 1
+  replicas: {{ .Values.csi.controller.replicaCount }}
   selector:
     matchLabels:
       app: {{ $fullName }}-csi-controller
       role: linstor-csi
-  serviceName: linstor-csi
   template:
     metadata:
       labels:
@@ -23,10 +22,14 @@ spec:
         image: {{ .Values.csi.image.csiProvisioner.repository }}:{{ .Values.csi.image.csiProvisioner.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiProvisioner.pullPolicy }}
         args:
-        - --v=5
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --v=5
+        - --timeout=1m
+        # restore old default fstype
+        - --default-fstype=ext4
         - --feature-gates=Topology={{ .Values.csi.controller.csiProvisioner.topology }}
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -39,7 +42,9 @@ spec:
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --timeout=1m
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -52,6 +57,11 @@ spec:
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
+        - --timeout=1m
+        # LINSTOR can resize while in use, no need to check if volume is in use
+        - --handle-volume-inuse-error=false
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -62,8 +72,10 @@ spec:
         image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}
         args:
+        - --timeout=1m
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -76,7 +88,7 @@ spec:
         args:
         - --csi-endpoint=$(CSI_ENDPOINT)
         - --node=$(KUBE_NODE_NAME)
-        - --linstor-endpoint=$(LINSTOR_IP)
+        - --linstor-endpoint=$(LS_CONTROLLERS)
         - --log-level=debug
         env:
         - name: CSI_ENDPOINT
@@ -85,7 +97,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: LINSTOR_IP
+        - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
         {{- else }}

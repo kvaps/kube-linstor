@@ -22,6 +22,8 @@ spec:
         imagePullPolicy: {{ .Values.csi.image.csiNodeDriverRegistrar.pullPolicy }}
         args:
         - --v=5
+        # No --timeout here, it's a very recent addition and not very useful for a single call that should return
+        # static information
         - --csi-address=$(ADDRESS)
         - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
         env:
@@ -45,13 +47,25 @@ spec:
           name: plugin-dir
         - mountPath: /registration/
           name: registration-dir
+      - name: csi-livenessprobe
+        image: {{ .Values.csi.image.csiLivenessProbe.repository }}:{{ .Values.csi.image.csiLivenessProbe.tag }}
+        imagePullPolicy: {{ .Values.csi.image.csiLivenessProbe.pullPolicy }}
+        args:
+        - --csi-address=$(ADDRESS)
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        volumeMounts:
+        - mountPath: /csi/
+          name: plugin-dir
+
       - name: linstor-csi-plugin
         image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
         imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
         args:
         - --csi-endpoint=$(CSI_ENDPOINT)
         - --node=$(KUBE_NODE_NAME)
-        - --linstor-endpoint=$(LINSTOR_IP)
+        - --linstor-endpoint=$(LS_CONTROLLERS)
         - --log-level=debug
         env:
         - name: CSI_ENDPOINT
@@ -60,7 +74,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: LINSTOR_IP
+        - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
         {{- else }}

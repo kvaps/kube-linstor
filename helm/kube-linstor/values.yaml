@@ -104,27 +104,33 @@ csi:
       tag: v1.11.0
       pullPolicy: IfNotPresent
     csiProvisioner:
-      repository: quay.io/k8scsi/csi-provisioner
+      repository: k8s.gcr.io/sig-storage/csi-provisioner
       tag: v2.0.4
       pullPolicy: IfNotPresent
     csiAttacher:
-      repository: quay.io/k8scsi/csi-attacher
+      repository: k8s.gcr.io/sig-storage/csi-attacher
       tag: v3.0.2
       pullPolicy: IfNotPresent
     csiResizer:
-      repository: quay.io/k8scsi/csi-resizer
+      repository: k8s.gcr.io/sig-storage/csi-resizer
       tag: v1.0.1
       pullPolicy: IfNotPresent
     csiSnapshotter:
-      repository: quay.io/k8scsi/csi-snapshotter
+      repository: k8s.gcr.io/sig-storage/csi-snapshotter
       tag: v3.0.2
       pullPolicy: IfNotPresent
     csiNodeDriverRegistrar:
-      repository: quay.io/k8scsi/csi-node-driver-registrar
+      repository: k8s.gcr.io/sig-storage/csi-node-driver-registrar
       tag: v2.0.1
+      pullPolicy: IfNotPresent
+    csiLivenessProbe:
+      repository: k8s.gcr.io/sig-storage/livenessprobe
+      tag: v2.1.0
       pullPolicy: IfNotPresent
 
   controller:
+    replicaCount: 2
+
     csiProvisioner:
       topology: false
 

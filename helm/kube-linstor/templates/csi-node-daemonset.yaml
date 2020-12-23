@@ -51,14 +51,13 @@ spec:
         image: {{ .Values.csi.image.csiLivenessProbe.repository }}:{{ .Values.csi.image.csiLivenessProbe.tag }}
         imagePullPolicy: {{ .Values.csi.image.csiLivenessProbe.pullPolicy }}
         args:
-        - --csi-address=$(ADDRESS)
+        - --csi-address=$(CSI_ENDPOINT)
         env:
         - name: CSI_ENDPOINT
           value: unix:///csi/csi.sock
         volumeMounts:
         - mountPath: /csi/
           name: plugin-dir
-
       - name: linstor-csi-plugin
         image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
         imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
@@ -67,6 +66,10 @@ spec:
         - --node=$(KUBE_NODE_NAME)
         - --linstor-endpoint=$(LS_CONTROLLERS)
         - --log-level=debug
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9808
         env:
         - name: CSI_ENDPOINT
           value: unix:///csi/csi.sock

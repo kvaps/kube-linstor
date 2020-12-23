@@ -151,6 +151,25 @@ csi:
     #     operator: Exists
     #     effect: NoSchedule
 
+haController:
+  enabled: true
+  image:
+    repository: docker.io/kvaps/linstor-ha-controller
+    tag: v1.11.0
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: regsecret
+
+  replicaCount: 2
+
+  # nodeSelector:
+  #   node-role.kubernetes.io/master: ""
+  
+  # tolerations:
+  #   - key: node-role.kubernetes.io/master
+  #     operator: Exists
+  #     effect: NoSchedule
+
 # ------------------------------------------------------------------------------
 # Stork is a scheduler extender plugin for Kubernetes which allows a storage
 # driver to give the Kubernetes scheduler hints about where to place a new pod

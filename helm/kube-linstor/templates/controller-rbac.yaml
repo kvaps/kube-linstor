@@ -8,7 +8,11 @@ metadata:
 rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
-    verbs: ["get", "create", "update"]
+    verbs: ["create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "update"]
+    resourceNames: ["{{ $fullName }}-controller"]
   - apiGroups: [""]
     resources: ["endpoints", "endpoints/restricted"]
     verbs: ["create", "patch", "update"]

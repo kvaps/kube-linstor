@@ -10,9 +10,9 @@ data:
   linstor-client.conf: |+
     [global]
       {{- if not .Values.controller.ssl.enabled }}
-      controllers = linstor://localhost:{{ .Values.controller.port }}
+      controllers = linstor://localhost:{{ .Values.controller.port }},linstor://{{ $fullName }}-controller:{{ .Values.controller.port }}
       {{- else }}
-      controllers = linstor+ssl://localhost:{{ .Values.controller.ssl.port }}
+      controllers = linstor+ssl://localhost:{{ .Values.controller.ssl.port }},linstor+ssl://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
       certfile = /tls/tls.crt
       keyfile = /tls/tls.key
       cafile = /tls/ca.crt

@@ -2,14 +2,14 @@
 {{- if .Values.controller.enabled }}
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   labels:
     app: {{ $fullName }}-controller
   name: {{ $fullName }}-controller
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.controller.replicaCount }}
   selector:
     matchLabels:
       app: {{ $fullName }}-controller
@@ -85,23 +85,15 @@ spec:
         image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         command:
+        - /k8s-await-election
         - /usr/share/linstor-server/bin/Controller
         - --logs=/logs
         - --config-directory=/config
         livenessProbe:
           httpGet:
-            path: /health
-            port: {{ .Values.controller.port }}
+            path: /
+            port: 9999
             scheme: HTTP
-          periodSeconds: 10
-          initialDelaySeconds: 300
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: {{ .Values.controller.port }}
-            scheme: HTTP
-          periodSeconds: 10
-          initialDelaySeconds: 5
         ports:
         - name: restapi
           containerPort: {{ .Values.controller.port }}
@@ -125,6 +117,37 @@ spec:
         {{- end }}
         - name: logs
           mountPath: /logs
+        env:
+        - name: K8S_AWAIT_ELECTION_ENABLED
+          value: "1"
+        - name: K8S_AWAIT_ELECTION_NAME
+          value: {{ $fullName }}-controller
+        - name: K8S_AWAIT_ELECTION_LOCK_NAME
+          value: {{ $fullName }}-controller
+        - name: K8S_AWAIT_ELECTION_LOCK_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: K8S_AWAIT_ELECTION_IDENTITY
+          valueFrom:    
+            fieldRef:   
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: K8S_AWAIT_ELECTION_STATUS_ENDPOINT
+          value: :9999
+        - name: K8S_AWAIT_ELECTION_SERVICE_NAME
+          value: {{ $fullName }}-controller
+        - name: K8S_AWAIT_ELECTION_SERVICE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: K8S_AWAIT_ELECTION_SERVICE_PORTS_JSON
+          value: '{{ with include (print $.Template.BasePath "/controller-service.yaml") . | fromYaml }}{{ .spec.ports | toJson }}{{ end }}'
+        - name: K8S_AWAIT_ELECTION_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      serviceAccountName: {{ $fullName }}-controller
       priorityClassName: system-node-critical
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:

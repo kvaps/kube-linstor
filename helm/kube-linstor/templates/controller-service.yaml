@@ -16,6 +16,5 @@ spec:
     port: {{ .Values.controller.port }}
   - name: ssl
     port: {{ .Values.controller.ssl.port }}
-  selector:
-    app: {{ $fullName }}-controller
+  # NOTE: No selector here! A selector would automatically add all matching and ready pods to the endpoint
 {{- end }}

@@ -7,10 +7,12 @@ controller:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-controller
-    tag: v1.10.0
+    tag: v1.11.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
+
+  replicaCount: 2
 
   port: 3370
   ssl:
@@ -61,7 +63,7 @@ satellite:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-satellite
-    tag: v1.10.0
+    tag: v1.11.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -99,30 +101,36 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: docker.io/kvaps/linstor-csi
-      tag: v1.10.0
+      tag: v1.11.0
       pullPolicy: IfNotPresent
     csiProvisioner:
-      repository: quay.io/k8scsi/csi-provisioner
+      repository: k8s.gcr.io/sig-storage/csi-provisioner
       tag: v2.0.4
       pullPolicy: IfNotPresent
     csiAttacher:
-      repository: quay.io/k8scsi/csi-attacher
+      repository: k8s.gcr.io/sig-storage/csi-attacher
       tag: v3.0.2
       pullPolicy: IfNotPresent
     csiResizer:
-      repository: quay.io/k8scsi/csi-resizer
+      repository: k8s.gcr.io/sig-storage/csi-resizer
       tag: v1.0.1
       pullPolicy: IfNotPresent
     csiSnapshotter:
-      repository: quay.io/k8scsi/csi-snapshotter
+      repository: k8s.gcr.io/sig-storage/csi-snapshotter
       tag: v3.0.2
       pullPolicy: IfNotPresent
     csiNodeDriverRegistrar:
-      repository: quay.io/k8scsi/csi-node-driver-registrar
+      repository: k8s.gcr.io/sig-storage/csi-node-driver-registrar
       tag: v2.0.1
+      pullPolicy: IfNotPresent
+    csiLivenessProbe:
+      repository: k8s.gcr.io/sig-storage/livenessprobe
+      tag: v2.1.0
       pullPolicy: IfNotPresent
 
   controller:
+    replicaCount: 2
+
     csiProvisioner:
       topology: false
 
@@ -143,6 +151,25 @@ csi:
     #     operator: Exists
     #     effect: NoSchedule
 
+haController:
+  enabled: true
+  image:
+    repository: docker.io/kvaps/linstor-ha-controller
+    tag: v1.11.0
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: regsecret
+
+  replicaCount: 2
+
+  # nodeSelector:
+  #   node-role.kubernetes.io/master: ""
+  
+  # tolerations:
+  #   - key: node-role.kubernetes.io/master
+  #     operator: Exists
+  #     effect: NoSchedule
+
 # ------------------------------------------------------------------------------
 # Stork is a scheduler extender plugin for Kubernetes which allows a storage
 # driver to give the Kubernetes scheduler hints about where to place a new pod
@@ -153,12 +180,12 @@ stork:
   enabled: true
   image:
     repository: docker.io/kvaps/linstor-stork
-    tag: v1.10.0
+    tag: v1.11.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
 
-  replicaCount: 3
+  replicaCount: 2
 
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""
@@ -171,13 +198,13 @@ stork:
 storkScheduler:
   enabled: true
   image:
-    repository: gcr.io/google_containers/kube-scheduler-amd64
-    tag: v1.16.9
+    repository: k8s.gcr.io/kube-scheduler
+    tag: v1.20.1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
 
-  replicaCount: 3
+  replicaCount: 2
 
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""

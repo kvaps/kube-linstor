@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.10.0
+ARG VERSION=1.11.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -22,7 +22,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as client-builder
 
-ARG CLIENT_VERSION=1.4.1
+ARG CLIENT_VERSION=1.6.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -52,10 +52,21 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
+FROM golang:1.15 as k8s-await-election-builder
+
+RUN git clone https://github.com/LINBIT/k8s-await-election/ /usr/local/go/k8s-await-election/ \
+ && cd /usr/local/go/k8s-await-election \
+ && git reset --hard v0.2.0 \
+ && make \
+ && mv ./out/k8s-await-election /
+
+# ------------------------------------------------------------------------------
+
 FROM debian:buster
 
 COPY --from=builder /linstor-common_*_all.deb /linstor-controller_*_all.deb /packages/
 COPY --from=client-builder /python-linstor_*_all.deb /linstor-client_*_all.deb /packages/
+COPY --from=k8s-await-election-builder /k8s-await-election /k8s-await-election
 
 # Install repos and system upgrade
 ENV DEBIAN_FRONTEND noninteractive

@@ -2,16 +2,15 @@
 {{- if .Values.csi.enabled }}
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: {{ $fullName }}-csi-controller
 spec:
-  replicas: 1
+  replicas: {{ .Values.csi.controller.replicaCount }}
   selector:
     matchLabels:
       app: {{ $fullName }}-csi-controller
       role: linstor-csi
-  serviceName: linstor-csi
   template:
     metadata:
       labels:
@@ -20,64 +19,120 @@ spec:
     spec:
       containers:
       - name: csi-provisioner
-        image: {{ .Values.csi.image.csiProvisioner.repository }}:{{ .Values.csi.image.csiProvisioner.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiProvisioner.pullPolicy }}
+        {{- with .Values.csi.image.csiProvisioner }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
-        - --v=5
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --v=5
+        - --timeout=1m
+        # restore old default fstype
+        - --default-fstype=ext4
         - --feature-gates=Topology={{ .Values.csi.controller.csiProvisioner.topology }}
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-attacher
-        image: {{ .Values.csi.image.csiAttacher.repository }}:{{ .Values.csi.image.csiAttacher.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiAttacher.pullPolicy }}
+        {{- with .Values.csi.image.csiAttacher }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --timeout=1m
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-resizer
-        image: {{ .Values.csi.image.csiResizer.repository }}:{{ .Values.csi.image.csiResizer.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiResizer.pullPolicy }}
+        {{- with .Values.csi.image.csiResizer }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
+        - --timeout=1m
+        # LINSTOR can resize while in use, no need to check if volume is in use
+        - --handle-volume-inuse-error=false
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-snapshotter
-        image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}
+        {{- with .Values.csi.image.csiSnapshotter }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
+        - --timeout=1m
         - --csi-address=$(ADDRESS)
-        - --timeout=120s
+        - --leader-election=true
+        - --leader-election-namespace=$(NAMESPACE)
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
+      - name: csi-livenessprobe
+        {{- with .Values.csi.image.csiLivenessProbe }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
+        args:
+        - --csi-address=$(CSI_ENDPOINT)
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: linstor-csi-plugin
-        image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
-        imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
+        {{- with .Values.csi.image.linstorCsiPlugin }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --csi-endpoint=$(CSI_ENDPOINT)
         - --node=$(KUBE_NODE_NAME)
-        - --linstor-endpoint=$(LINSTOR_IP)
+        - --linstor-endpoint=$(LS_CONTROLLERS)
         - --log-level=debug
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9808
         env:
         - name: CSI_ENDPOINT
           value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
@@ -85,7 +140,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: LINSTOR_IP
+        - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
         {{- else }}

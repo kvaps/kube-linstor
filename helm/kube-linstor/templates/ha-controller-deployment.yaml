@@ -1,0 +1,82 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.haController.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ $fullName }}-ha-controller
+  name: {{ $fullName }}-ha-controller
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.haController.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-ha-controller
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-ha-controller
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.haController.image.pullSecrets | nindent 8 }}
+      containers:
+      - name: linstor-ha-controller
+        {{- with .Values.haController.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
+        imagePullPolicy: {{ .Values.haController.image.pullPolicy }}
+        command:
+        - /piraeus-ha-controller
+        - --leader-election=true
+        - --leader-election-lease-name=$(NAME)
+        - --leader-election-namespace=$(NAMESPACE)
+        - --leader-election-resource-name={{ $fullName }}-ha-controller
+        - --v=5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+        env:
+        - name: LS_CONTROLLERS
+        {{- if not .Values.controller.ssl.enabled }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
+        - name: LS_USER_CERTIFICATE
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: {{ $fullName }}-client-tls
+        - name: LS_USER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: {{ $fullName }}-client-tls
+        - name: LS_ROOT_CA
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: {{ $fullName }}-client-tls
+        {{- end }}
+        - name: NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      serviceAccountName: {{ $fullName }}-ha-controller
+      priorityClassName: system-node-critical
+      {{- with .Values.haController.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.haController.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+{{- end }}

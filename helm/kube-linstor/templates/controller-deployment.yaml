@@ -24,8 +24,10 @@ spec:
       initContainers:
       {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
       - name: load-certs
-        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
-        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        {{- with .Values.controller.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         command:
         - /bin/bash
         - -xec
@@ -62,8 +64,10 @@ spec:
       {{- end }}
       {{- if .Values.controller.initSettings.enabled }}
       - name: init-settings
-        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
-        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        {{- with .Values.controller.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         command:
         - /bin/bash
         - -xec
@@ -81,8 +85,10 @@ spec:
       {{- end }}
       containers:
       - name: linstor-controller
-        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
-        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        {{- with .Values.controller.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         command:
         - /k8s-await-election
         - /usr/share/linstor-server/bin/Controller

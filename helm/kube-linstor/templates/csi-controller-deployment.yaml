@@ -19,8 +19,10 @@ spec:
     spec:
       containers:
       - name: csi-provisioner
-        image: {{ .Values.csi.image.csiProvisioner.repository }}:{{ .Values.csi.image.csiProvisioner.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiProvisioner.pullPolicy }}
+        {{- with .Values.csi.image.csiProvisioner }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --csi-address=$(ADDRESS)
         - --v=5
@@ -41,8 +43,10 @@ spec:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-attacher
-        image: {{ .Values.csi.image.csiAttacher.repository }}:{{ .Values.csi.image.csiAttacher.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiAttacher.pullPolicy }}
+        {{- with .Values.csi.image.csiAttacher }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
@@ -60,8 +64,10 @@ spec:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-resizer
-        image: {{ .Values.csi.image.csiResizer.repository }}:{{ .Values.csi.image.csiResizer.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiResizer.pullPolicy }}
+        {{- with .Values.csi.image.csiResizer }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --v=5
         - --csi-address=$(ADDRESS)
@@ -81,8 +87,10 @@ spec:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
       - name: csi-snapshotter
-        image: {{ .Values.csi.image.csiSnapshotter.repository }}:{{ .Values.csi.image.csiSnapshotter.tag }}
-        imagePullPolicy: {{ .Values.csi.image.csiSnapshotter.pullPolicy }}
+        {{- with .Values.csi.image.csiSnapshotter }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --timeout=1m
         - --csi-address=$(ADDRESS)
@@ -112,8 +120,10 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: linstor-csi-plugin
-        image: {{ .Values.csi.image.linstorCsiPlugin.repository }}:{{ .Values.csi.image.linstorCsiPlugin.tag }}
-        imagePullPolicy: {{ .Values.csi.image.linstorCsiPlugin.pullPolicy }}
+        {{- with .Values.csi.image.linstorCsiPlugin }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         args:
         - --csi-endpoint=$(CSI_ENDPOINT)
         - --node=$(KUBE_NODE_NAME)

@@ -22,7 +22,10 @@ spec:
         {{- toYaml .Values.haController.image.pullSecrets | nindent 8 }}
       containers:
       - name: linstor-ha-controller
-        image: {{ .Values.haController.image.repository }}:{{ .Values.haController.image.tag }}
+        {{- with .Values.haController.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .PullPolicy }}
+        {{- end }}
         imagePullPolicy: {{ .Values.haController.image.pullPolicy }}
         command:
         - /piraeus-ha-controller

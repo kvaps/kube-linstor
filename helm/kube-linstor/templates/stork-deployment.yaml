@@ -27,9 +27,17 @@ spec:
         command:
         - /stork
         - --driver=linstor
-        - --health-monitor=false
         - --leader-elect=true
+        - --lock-object-name={{ $fullName }}-stork
+        - --lock-object-namespace=$(NAMESPACE)
+        - --health-monitor=false
+        - --snapshotter=false
+        - --cluster-domain-controllers=false
         env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}
           value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}

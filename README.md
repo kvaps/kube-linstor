@@ -20,14 +20,15 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 [linstor-csi-version]: https://img.shields.io/docker/v/kvaps/linstor-csi.svg?sort=semver
 [linstor-stork]: dockerfiles/linstor-stork/Dockerfile
 [linstor-stork-version]: https://img.shields.io/docker/v/kvaps/linstor-stork.svg?sort=semver
-[linstor-stork]: dockerfiles/linstor-ha-controller/Dockerfile
-[linstor-stork-version]: https://img.shields.io/docker/v/kvaps/linstor-ha-controller.svg?sort=semver
+[linstor-ha-controller]: dockerfiles/linstor-ha-controller/Dockerfile
+[linstor-ha-controller-version]: https://img.shields.io/docker/v/kvaps/linstor-ha-controller.svg?sort=semver
 
 ## Requirements
 
 * Working Kubernetes cluster (`v1.17` or higher).
 * DRBD9 kernel module installed on each satellite node.
 * PostgeSQL database / etcd or any other backing store for redundancy.
+* [Snapshot Controller](https://kubernetes-csi.github.io/docs/snapshot-controller.html#snapshot-controller) (optional)
 
 ## QuckStart
 
@@ -62,7 +63,7 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.10.0/examples/linstor-db.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.0/examples/linstor-db.yaml
 
   # install release
   helm install linstor-db kvaps/stolon \
@@ -117,10 +118,10 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.10.0/examples/linstor.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.0/examples/linstor.yaml
 
   # install release
-  helm install linstor kvaps/linstor --version 1.10.0 \
+  helm install linstor kvaps/linstor --version 1.11.0 \
     --namespace linstor \
     -f linstor.yaml
   ```
@@ -128,15 +129,20 @@ helm repo add kvaps https://kvaps.github.io/charts
   > **_NOTE:_**
   > The current example will deploy linstor- and csi-controllers on your Kubernetes-master nodes and satellites on all nodes in the cluster.
 
+
+## Install snapshot-controller
+
+https://kubernetes-csi.github.io/docs/snapshot-controller.html#deployment
+
 ## Usage
 
 You can get interactive linstor shell by simple exec into **linstor-controller** container:
 
 ```bash
-kubectl exec -ti -n linstor sts/linstor-controller -- linstor
+kubectl exec -ti -n linstor deploy/linstor-controller -- linstor
 ```
 
-Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) for define nodes and create new resources.
+Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) to define nodes and create new resources.
 
 #### SSL notes
 

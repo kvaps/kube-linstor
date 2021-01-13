@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.11.0
+ARG VERSION=1.11.1
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -22,7 +22,8 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as client-builder
 
-ARG CLIENT_VERSION=1.6.0
+ARG API_VERSION=1.6.0
+ARG CLIENT_VERSION=1.6.1
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -31,15 +32,15 @@ RUN apt-get update \
 
 RUN git clone --recurse-submodules https://github.com/LINBIT/linstor-api-py /linstor-api-py
 WORKDIR /linstor-api-py
-RUN git checkout v${CLIENT_VERSION} \
+RUN git checkout v${API_VERSION} \
  && make debrelease \
- && mv ./dist/python-linstor-${CLIENT_VERSION}.tar.gz ../python-linstor_${CLIENT_VERSION}.orig.tar.gz \
- && tar -C / -xvf /python-linstor_${CLIENT_VERSION}.orig.tar.gz
-WORKDIR /python-linstor-${CLIENT_VERSION}
+ && mv ./dist/python-linstor-${API_VERSION}.tar.gz ../python-linstor_${API_VERSION}.orig.tar.gz \
+ && tar -C / -xvf /python-linstor_${API_VERSION}.orig.tar.gz
+WORKDIR /python-linstor-${API_VERSION}
 RUN dpkg-buildpackage -us -uc
 
 RUN rm -rf /linstor-api-py \
- && mv /python-linstor-${CLIENT_VERSION} /linstor-api-py
+ && mv /python-linstor-${API_VERSION} /linstor-api-py
 
 RUN git clone https://github.com/LINBIT/linstor-client.git /linstor-client
 WORKDIR /linstor-client
@@ -56,7 +57,7 @@ FROM golang:1.15 as k8s-await-election-builder
 
 RUN git clone https://github.com/LINBIT/k8s-await-election/ /usr/local/go/k8s-await-election/ \
  && cd /usr/local/go/k8s-await-election \
- && git reset --hard v0.2.0 \
+ && git reset --hard v0.2.2 \
  && make \
  && mv ./out/k8s-await-election /
 

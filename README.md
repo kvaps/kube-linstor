@@ -63,7 +63,7 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.0/examples/linstor-db.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.1/examples/linstor-db.yaml
 
   # install release
   helm install linstor-db kvaps/stolon \
@@ -118,10 +118,10 @@ helm repo add kvaps https://kvaps.github.io/charts
 
   ```bash
   # download example values
-  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.0/examples/linstor.yaml
+  curl -LO https://github.com/kvaps/kube-linstor/raw/v1.11.1/examples/linstor.yaml
 
   # install release
-  helm install linstor kvaps/linstor --version 1.11.0 \
+  helm install linstor kvaps/linstor --version 1.11.1 \
     --namespace linstor \
     -f linstor.yaml
   ```

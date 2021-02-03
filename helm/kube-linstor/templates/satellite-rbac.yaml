@@ -1,0 +1,8 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.satellite.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $fullName }}-satellite-sa
+{{- end }}

@@ -25,7 +25,7 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 ## Requirements
 
-* Working Kubernetes cluster (`v1.17` or higher).
+* Working Kubernetes cluster (`v1.18` or higher).
 * DRBD9 kernel module installed on each satellite node.
 * PostgeSQL database / etcd or any other backing store for redundancy.
 * [Snapshot Controller](https://kubernetes-csi.github.io/docs/snapshot-controller.html#snapshot-controller) (optional)

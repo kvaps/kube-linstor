@@ -29,6 +29,10 @@ rules:
     resources: ["podsecuritypolicies"]
     resourceNames: ["{{ $fullName }}"]
     verbs: ["use"]
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -42,10 +46,6 @@ subjects:
   - kind: ServiceAccount
     name: {{ $fullName }}-ha-controller
     namespace: {{ .Release.Namespace }}
-  - apiGroups: ["extensions"]
-    resources: ["podsecuritypolicies"]
-    resourceNames: ["{{ $fullName }}"]
-    verbs: ["use"]
 ---
 apiVersion: v1
 kind: ServiceAccount

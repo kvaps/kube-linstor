@@ -100,9 +100,11 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+        {{- if .Values.controller.ssl.enabled }}
         volumeMounts:
           - name: client-tls
             mountPath: /tls/client
+        {{- end }}
       {{- end }}
       {{- end }}
       containers:
@@ -224,7 +226,7 @@ spec:
         secret:
           secretName: {{ $fullName }}-satellite-tls
       {{- end }}
-      {{- if .Values.satellite.autoJoinCluster }}
+      {{- if and .Values.controller.ssl.enabled .Values.satellite.autoJoinCluster }}
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls

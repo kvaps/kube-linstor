@@ -9,6 +9,10 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -22,10 +26,6 @@ subjects:
 - kind: ServiceAccount
   name: {{ $fullName }}-csi-node-sa
   namespace: {{ .Release.Namespace }}
-- apiGroups: ["extensions"]
-  resources: ["podsecuritypolicies"]
-  resourceNames: ["{{ $fullName }}"]
-  verbs: ["use"]
 ---
 apiVersion: v1
 kind: ServiceAccount

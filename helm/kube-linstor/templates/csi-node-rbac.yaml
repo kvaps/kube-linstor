@@ -22,6 +22,10 @@ subjects:
 - kind: ServiceAccount
   name: {{ $fullName }}-csi-node-sa
   namespace: {{ .Release.Namespace }}
+- apiGroups: ["extensions"]
+  resources: ["podsecuritypolicies"]
+  resourceNames: ["{{ $fullName }}"]
+  verbs: ["use"]
 ---
 apiVersion: v1
 kind: ServiceAccount

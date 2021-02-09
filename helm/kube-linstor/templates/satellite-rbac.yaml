@@ -5,4 +5,26 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ $fullName }}-satellite-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullName }}-satellite-role
+rules:
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $fullName }}-satellite-binding
+roleRef:
+  kind: Role
+  name: {{ $fullName }}-satellite-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: {{ $fullName }}-satellite-sa
 {{- end }}

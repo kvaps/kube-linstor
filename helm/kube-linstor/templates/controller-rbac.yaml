@@ -16,6 +16,10 @@ rules:
   - apiGroups: [""]
     resources: ["endpoints", "endpoints/restricted"]
     verbs: ["create", "patch", "update"]
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

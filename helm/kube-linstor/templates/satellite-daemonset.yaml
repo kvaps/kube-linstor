@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ $fullName }}-satellite
     spec:
-      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
+      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinCluster }}
       initContainers:
       {{- if .Values.satellite.ssl.enabled }}
       - name: load-certs
@@ -65,6 +65,44 @@ spec:
           mountPath: /etc/drbd.d
         - name: usr-local-sbin
           mountPath: /host-bin
+      {{- end }}
+      {{- if .Values.satellite.autoJoinCluster }}
+      - image: alpine:3.13
+        imagePullPolicy: {{ .PullPolicy }}
+        name: join-cluster
+        command:
+          - /bin/sh
+          - -exc
+          - |
+            apk add --no-cache curl
+            {{- if .Values.controller.ssl.enabled }}
+            curl --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -X POST -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}/v1/nodes
+            {{- else }}
+            curl -X POST -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" http://{{ $fullName }}-controller:{{ .Values.controller.port }}/v1/nodes
+            {{- end }}
+        env:
+          {{- if .Values.satellite.ssl.enabled }}
+          - name: NODE_PORT
+            value: "{{ .Values.satellite.ssl.port }}"
+          - name: NODE_ENCRYPTION_TYPE
+            value: "ssl"
+          {{- else }}
+          - name: NODE_PORT
+            value: "{{ .Values.satellite.port }}"
+          - name: NODE_ENCRYPTION_TYPE
+            value: "Plain"
+          {{- end }}
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        volumeMounts:
+          - name: client-tls
+            mountPath: /tls/client
       {{- end }}
       {{- end }}
       containers:
@@ -129,6 +167,7 @@ spec:
       hostIPC: true
       hostNetwork: true
       hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         {{- toYaml .Values.satellite.image.pullSecrets | nindent 8 }}
       priorityClassName: system-node-critical
@@ -184,6 +223,11 @@ spec:
       - name: satellite-tls
         secret:
           secretName: {{ $fullName }}-satellite-tls
+      {{- end }}
+      {{- if .Values.satellite.autoJoinCluster }}
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
       {{- end }}
       - name: logs
         hostPath:

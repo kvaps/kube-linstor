@@ -226,7 +226,7 @@ spec:
         secret:
           secretName: {{ $fullName }}-satellite-tls
       {{- end }}
-      {{- if and .Values.controller.ssl.enabled .Values.satellite.autoJoinCluster }}
+      {{- if and .Values.controller.ssl.enabled .Values.satellite.autoJoinNodes }}
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls

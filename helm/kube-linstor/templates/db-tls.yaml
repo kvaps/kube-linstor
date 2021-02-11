@@ -1,0 +1,15 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.controller.enabled }}
+{{- if .Values.controller.db.tls }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $fullName }}-db-tls
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ b64enc .Values.controller.db.cert }}
+  tls.key: {{ b64enc .Values.controller.db.key }}
+  ca.crt: {{ b64enc .Values.controller.db.ca }}
+{{- end }}
+{{- end }}

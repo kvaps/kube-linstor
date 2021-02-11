@@ -45,7 +45,6 @@ spec:
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor-satellite -destkeystore /config/ssl/certificates.jks
           {{- end }}
           rm -f "$tmp"
-        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         volumeMounts:
         - name: config
           mountPath: /config
@@ -122,6 +121,10 @@ spec:
         - name: client-tls
           mountPath: /tls
         {{- end }}
+        {{- if .Values.controller.db.tls }}
+        - name: db-tls
+          mountPath: /tls/db
+        {{- end }}
         - name: logs
           mountPath: /logs
         env:
@@ -136,8 +139,8 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: K8S_AWAIT_ELECTION_IDENTITY
-          valueFrom:    
-            fieldRef:   
+          valueFrom:
+            fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
         - name: K8S_AWAIT_ELECTION_STATUS_ENDPOINT
@@ -192,5 +195,10 @@ spec:
       - name: satellite-tls
         secret:
           secretName: {{ $fullName }}-satellite-tls
+      {{- end }}
+      {{- if .Values.controller.db.tls }}
+      - name: db-tls
+        secret:
+          secretName: {{ $fullName }}-db-tls
       {{- end }}
 {{- end }}

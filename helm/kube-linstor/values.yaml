@@ -53,6 +53,21 @@ controller:
   #   user: linstor
   #   password: linstor
   #   connectionUrl: jdbc:postgresql://linstor-db-stolon-proxy/linstor
+  
+  # Etcd example
+  # db:
+  #   connectionUrl: etcd://node1:2379,node2:2379
+  #   tls: true
+  #   cert: |
+  #     -----BEGIN CERTIFICATE-----
+  #     MIIC2DCCAcCgAwIBAgIBATANBgkqh ...
+  #   key: |
+  #     -----BEGIN RSA PRIVATE KEY-----
+  #     MIIEpAIBAAKCAQEA0xRXCs7WUhmHZ ...
+  #   ca: |
+  #     -----BEGIN CERTIFICATE-----
+  #     MIIDDzCCAfegAwIBAgIRAKTcgKx3g ...
+  #   etcdPrefix: "/LINSTOR/"
 
 # ------------------------------------------------------------------------------
 # Linstor-satellites run on every node, they listen and perform controller tasks

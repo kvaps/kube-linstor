@@ -66,7 +66,7 @@ spec:
         - name: usr-local-sbin
           mountPath: /host-bin
       {{- end }}
-      {{- if .Values.satellite.autoJoinCluster }}
+      {{- if .Values.satellite.autoJoinNodes }}
       - image: alpine:3.13
         imagePullPolicy: {{ .PullPolicy }}
         name: join-cluster

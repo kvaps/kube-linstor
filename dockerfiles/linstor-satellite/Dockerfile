@@ -22,7 +22,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as utils-builder
 
-ARG UTILS_VERSION=9.15.0
+ARG UTILS_VERSION=9.16.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -82,7 +82,7 @@ RUN apt-get update \
 # Install additional tools
 RUN sed -i '/^deb / s/main/main contrib/' /etc/apt/sources.list \
  && apt-get update \
- && apt-get install --no-install-recommends -y zfsutils-linux cryptsetup nvme-cli zstd socat \
+ && apt-get install --no-install-recommends -y zfsutils-linux cryptsetup nvme-cli zstd socat curl \
  && apt-get download lvm2 \
  && dpkg --unpack lvm2*.deb \
  && rm -f lvm2*.deb /var/lib/dpkg/info/lvm2.postinst \

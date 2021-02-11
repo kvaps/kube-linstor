@@ -131,6 +131,9 @@ spec:
       hostPID: true
       imagePullSecrets:
         {{- toYaml .Values.satellite.image.pullSecrets | nindent 8 }}
+      {{- if .Values.podSecurityPolicy.enabled }}
+      serviceAccountName: {{ $fullName }}-satellite-sa
+      {{- end }}
       priorityClassName: system-node-critical
       {{- with .Values.satellite.nodeSelector }}
       nodeSelector:

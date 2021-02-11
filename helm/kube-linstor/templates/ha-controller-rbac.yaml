@@ -25,6 +25,16 @@ rules:
     resources: ["leases"]
     verbs: ["get", "update"]
     resourceNames: ["{{ $fullName }}-ha-controller"]
+  {{- if .Values.podSecurityPolicy.enabled }}
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["{{ $fullName }}"]
+    verbs: ["use"]
+  {{- end }}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

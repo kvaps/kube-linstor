@@ -36,9 +36,9 @@ Generates linstor.toml config file
   client_certificate = "/tls/db/tls.crt"
   client_key_pkcs8_pem = "/tls/db/tls.key"
 {{- end }}
-{{- if .Values.controller.db.etcdPrefix }}
+{{- with .Values.controller.db.etcdPrefix }}
   [db.etcd]
-  prefix = "{{ .Values.controller.db.etcdPrefix }}"
+  prefix = "{{ . }}"
 {{- end }}
 [http]
   port = {{ .Values.controller.port }}
@@ -52,4 +52,3 @@ Generates linstor.toml config file
   truststore_password = "linstor"
 {{- end }}
 {{ end }}
-

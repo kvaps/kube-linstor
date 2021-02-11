@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ $fullName }}-satellite
     spec:
-      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinCluster }}
+      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinCluster .Values.satellite.storagePools }}
       initContainers:
       {{- if .Values.satellite.ssl.enabled }}
       - name: load-certs
@@ -79,6 +79,35 @@ spec:
             curl --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -X POST -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}/v1/nodes
             {{- else }}
             curl -X POST -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" http://{{ $fullName }}-controller:{{ .Values.controller.port }}/v1/nodes
+            {{- end }}
+            {{- if .Values.satellite.storagePools }}
+            {{- if .Values.satellite.storagePools.lvmPools }}
+            {{- range .Values.satellite.storagePools.lvmPools }}
+            {{- if $.Values.controller.ssl.enabled }}
+            curl --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name  }}\",\"provider_kind\":\"LVM\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- else }}
+            curl -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name  }}\",\"provider_kind\":\"LVM\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.satellite.storagePools.lvmThinPools }}
+            {{- range .Values.satellite.storagePools.lvmThinPools }}
+            {{- if $.Values.controller.ssl.enabled }}
+            curl --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"LVM_THIN\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\",\"StorDriver/ThinPool\":\"{{ .thinVolume }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- else }}
+            curl -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"LVM_THIN\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\",\"StorDriver/ThinPool\":\"{{ .thinVolume }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.satellite.storagePools.zfsPools }}
+            {{- range .Values.satellite.storagePools.zfsPools }}
+            {{- if $.Values.controller.ssl.enabled }}
+            curl --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"{{if .thin }}ZFS_THIN{{ else }}ZFS{{ end }}\",\"props\":{\"StorDriver/{{if .thin }}ZPoolThin{{ else }}ZPool{{ end }}\":\"{{ .zPool }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- else }}
+            curl -X POST -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"{{if .thin }}ZFS_THIN{{ else }}ZFS{{ end }}\",\"props\":{\"StorDriver/{{if .thin }}ZPoolThin{{ else }}ZPool{{ end }}\":\"{{ .zPool }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- end }}
         env:
           {{- if .Values.satellite.ssl.enabled }}

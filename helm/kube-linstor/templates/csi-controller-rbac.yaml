@@ -74,10 +74,12 @@ rules:
     resources: ["leases"]
     verbs: ["get", "update"]
     resourceNames: ["linstor-csi-linbit-com"]
+  {{- if .Values.podSecurityPolicy.enabled }}
   - apiGroups: ["extensions"]
     resources: ["podsecuritypolicies"]
     resourceNames: ["{{ $fullName }}"]
     verbs: ["use"]
+    {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

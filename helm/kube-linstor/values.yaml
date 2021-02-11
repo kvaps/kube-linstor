@@ -77,8 +77,8 @@ satellite:
   # usage-count=no and udev-always-use-vnr options by default
   overwriteDrbdConf: true
 
-  # Join the cluster automatically at init
-  autoJoinCluster: true
+  # Join the nodes automatically at init
+  autoJoinNodes: true
 
   # How many nodes can simultaneously download new image
   update:

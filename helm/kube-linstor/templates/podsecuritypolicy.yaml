@@ -1,4 +1,5 @@
 {{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.podSecurityPolicy.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -26,3 +27,4 @@ spec:
     rule: RunAsAny
   volumes:
     - '*'
+{{- end }}

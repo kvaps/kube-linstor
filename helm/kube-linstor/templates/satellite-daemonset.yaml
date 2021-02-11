@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ $fullName }}-satellite
     spec:
-      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinCluster }}
+      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinNodes }}
       initContainers:
       {{- if .Values.satellite.ssl.enabled }}
       - name: load-certs

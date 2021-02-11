@@ -67,9 +67,11 @@ spec:
           mountPath: /host-bin
       {{- end }}
       {{- if .Values.satellite.autoJoinNodes }}
-      - image: alpine:3.13
+      - name: join-cluster
+        {{- with .Values.satellite.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
         imagePullPolicy: {{ .PullPolicy }}
-        name: join-cluster
+        {{- end }}
         command:
           - /bin/sh
           - -exc

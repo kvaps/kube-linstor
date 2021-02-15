@@ -136,23 +136,19 @@ https://kubernetes-csi.github.io/docs/snapshot-controller.html#deployment
 
 ## Usage
 
-You can get interactive linstor shell by simple exec into **linstor-controller** container:
+The satellite nodes will register themselves on controller automatically by init-container.
+
+You can get interactive linstor shell by simple exec into **linstor-controller** pod:
 
 ```bash
-kubectl exec -ti -n linstor deploy/linstor-controller -- linstor
+kubectl exec -ti -n linstor deploy/linstor-controller -- linstor interactive
 ```
 
-Refer to [official linstor documentation](https://docs.linbit.com/linbit-docs/) to define nodes and create new resources.
+Refer to [official linstor documentation](https://docs.linbit.com/docs/linstor-guide/) to define ***storage pools*** on them and configure ***resource groups***.
 
 #### SSL notes
 
 This chart enables SSL encryption for control-plane by default. It does not affect the DRBD performance but makes your LINSTOR setup more secure.
-
-Any way, do not forget to specify `--communicates-type SSL` option during node creation, example:
-
-```bash
-linstor node create alpha 1.2.3.4 --communication-type SSL
-```
 
 If you want to have external access, you need to download certificates for linstor client:
 
@@ -162,12 +158,6 @@ kubectl get secrets --namespace linstor linstor-client-tls \
 ```
 
 Then follow [official linstor documentation](https://www.linbit.com/drbd-user-guide/users-guide-linstor/#s-rest-api-https-restricted-client) to configure the client.
-
-> **_NOTE:_**
-> v1.9.0 release also introduce shorter release name: `linstor-` instead of `linstor-linstor-`, this change shouldn't break anything, however it will regenerate SSL certificates.
-If you are using LINSTOR API externally, you might need to update the client certificates or keep the old release name prefix by specifying `--set fullnameOverride=linstor-linstor` option.
->
-> See [#18](https://github.com/kvaps/kube-linstor/issues/18) for more details.
 
 ## Additional Information
 

@@ -1,7 +1,7 @@
 name: linstor
 description: Containerized LINSTOR SDS for Kubernetes, ready for production use.
-version: 1.11.1
-appVersion: 1.11.1-1
+version: 1.11.1-1
+appVersion: 1.11.1
 icon: https://hsto.org/getpro/habr/post_images/e47/594/c07/e47594c0721332fb46493d20339bb1be.png
 keywords:
   - linstor

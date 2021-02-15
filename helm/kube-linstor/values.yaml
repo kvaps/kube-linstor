@@ -6,8 +6,8 @@
 controller:
   enabled: true
   image:
-    repository: docker.io/kvaps/linstor-controller
-    tag: v1.11.1
+    repository: ghcr.io/kvaps/linstor-controller
+    tag: v1.11.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -77,8 +77,8 @@ controller:
 satellite:
   enabled: true
   image:
-    repository: docker.io/kvaps/linstor-satellite
-    tag: v1.11.1
+    repository: ghcr.io/kvaps/linstor-satellite
+    tag: v1.11.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -91,6 +91,9 @@ satellite:
   # Oerwrite drbd.conf and global_common.conf files. This option will enable
   # usage-count=no and udev-always-use-vnr options by default
   overwriteDrbdConf: true
+
+  # Join the nodes automatically at init
+  autoJoinNodes: true
 
   # How many nodes can simultaneously download new image
   update:
@@ -115,8 +118,8 @@ csi:
     pullSecrets:
       - name: regsecret
     linstorCsiPlugin:
-      repository: docker.io/kvaps/linstor-csi
-      tag: v1.11.1
+      repository: ghcr.io/kvaps/linstor-csi
+      tag: v1.11.1-1
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: k8s.gcr.io/sig-storage/csi-provisioner
@@ -169,8 +172,8 @@ csi:
 haController:
   enabled: true
   image:
-    repository: docker.io/kvaps/linstor-ha-controller
-    tag: v1.11.1
+    repository: ghcr.io/kvaps/linstor-ha-controller
+    tag: v1.11.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -194,8 +197,8 @@ haController:
 stork:
   enabled: true
   image:
-    repository: docker.io/kvaps/linstor-stork
-    tag: v1.11.1
+    repository: ghcr.io/kvaps/linstor-stork
+    tag: v1.11.1-1
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

@@ -16,6 +16,60 @@ spec:
         app: {{ $fullName }}-csi-node
         role: linstor-csi
     spec:
+      {{- if and .Values.controller.ssl.enabled .Values.storagePools }}
+      initContainers:
+        - name: add-storage-pools
+          {{- with .Values.satellite.image }}
+          image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+          imagePullPolicy: {{ .PullPolicy }}
+          {{- end }}
+          command:
+            - /bin/sh
+            - -exc
+            - |
+              {{- if .Values.controller.ssl.enabled }}
+              curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/config || exit 1
+              {{- else }}
+              curl -s -f http://{{ $fullName }}-controller:{{ .Values.controller.port }}/v1/nodes/${NODE_NAME} || exit 1
+              {{- end }}
+              {{- if .Values.storagePools.lvmPools }}
+              {{- range .Values.storagePools.lvmPools }}
+              {{- if $.Values.controller.ssl.enabled }}
+              curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name  }}\",\"provider_kind\":\"LVM\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- else }}
+              curl -s -f -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name  }}\",\"provider_kind\":\"LVM\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- end }}
+              {{- end }}
+              {{- end }}
+              {{- if .Values.storagePools.lvmThinPools }}
+              {{- range .Values.storagePools.lvmThinPools }}
+              {{- if $.Values.controller.ssl.enabled }}
+              curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"LVM_THIN\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\",\"StorDriver/ThinPool\":\"{{ .thinVolume }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- else }}
+              curl -s -f -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"LVM_THIN\",\"props\":{\"StorDriver/LvmVg\":\"{{ .volumeGroup }}\",\"StorDriver/ThinPool\":\"{{ .thinVolume }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- end }}
+              {{- end }}
+              {{- end }}
+              {{- if .Values.storagePools.zfsPools }}
+              {{- range .Values.storagePools.zfsPools }}
+              {{- if $.Values.controller.ssl.enabled }}
+              curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"{{if .thin }}ZFS_THIN{{ else }}ZFS{{ end }}\",\"props\":{\"StorDriver/{{if .thin }}ZPoolThin{{ else }}ZPool{{ end }}\":\"{{ .zPool }}\"}}" https://{{ $fullName }}-controller:{{ $.Values.controller.ssl.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- else }}
+              curl -s -f -H "Content-Type: application/json" -d "{\"storage_pool_name\":\"{{ .name }}\",\"provider_kind\":\"{{if .thin }}ZFS_THIN{{ else }}ZFS{{ end }}\",\"props\":{\"StorDriver/{{if .thin }}ZPoolThin{{ else }}ZPool{{ end }}\":\"{{ .zPool }}\"}}" http://{{ $fullName }}-controller:{{ $.Values.controller.port }}/v1/nodes/${NODE_NAME}/storage-pools || true
+              {{- end }}
+              {{- end }}
+              {{- end }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          {{- if .Values.controller.ssl.enabled }}
+          volumeMounts:
+            - name: client-tls
+              mountPath: /tls/client
+          {{- end }}
+      {{- end }}
       containers:
       - name: csi-node-driver-registrar
         {{- with .Values.csi.image.csiNodeDriverRegistrar }}
@@ -146,4 +200,9 @@ spec:
       - name: device-dir
         hostPath:
           path: /dev
+      {{- if and .Values.controller.ssl.enabled .Values.storagePools }}
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
+      {{- end }}
 {{- end }}

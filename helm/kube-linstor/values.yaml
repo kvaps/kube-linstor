@@ -239,3 +239,18 @@ storkScheduler:
 
 podSecurityPolicy:
   enabled: false
+
+# Create LINSTOR storage pools at init
+# On each host contributing storage, you need to create either an LVM Volume Group or a ZFS zPool
+# storagePools:
+#  lvmPools:
+#    - name: lvm-thick
+#      volumeGroup: drbdpool
+#  lvmThinPools:
+#    - name: lvm-thin
+#      thinVolume: thinpool
+#      volumeGroup: drbdpool
+#  zfsPools:
+#    - name: my-linstor-zpool
+#      zPool: for-linstor
+#      thin: true

@@ -15,6 +15,10 @@ rules:
     resources: ["podsecuritypolicies"]
     resourceNames: ["{{ $fullName }}"]
     verbs: ["use"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["{{ $fullName }}-controller"]
+    verbs: ["get"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

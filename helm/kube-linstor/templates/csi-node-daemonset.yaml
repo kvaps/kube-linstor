@@ -16,6 +16,29 @@ spec:
         app: {{ $fullName }}-csi-node
         role: linstor-csi
     spec:
+
+      initContainers:
+        ## Wait for the satellite pod on this node to be ready -- it must be before the CSI node attempts
+        ## to connect to it
+        - name: wait-for-satellite
+          image: bitnami/kubectl
+          imagePullPolicy: {{ .PullPolicy }}
+          command:
+            - /bin/sh
+            - -exc
+            - |
+              echo "[info] waiting for a pod with label [${SATELLITE_LABEL_SELECTOR}] in namespace [${SATELLITE_NAMESPACE}], on node [${NODE_NAME}]"
+              kubectl wait pod -n ${SATELLITE_NAMESPACE} -l ${SATELLITE_LABEL_SELECTOR} --field-selector spec.nodeName=${NODE_NAME} --for=condition=ready
+          env:
+            - name: SATELLITE_LABEL_SELECTOR
+              value: "app={{ $fullName }}-satellite"
+            - name: SATELLITE_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
       containers:
       - name: csi-node-driver-registrar
         {{- with .Values.csi.image.csiNodeDriverRegistrar }}

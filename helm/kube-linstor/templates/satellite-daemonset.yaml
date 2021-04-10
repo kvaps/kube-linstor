@@ -15,8 +15,34 @@ spec:
       labels:
         app: {{ $fullName }}-satellite
     spec:
+
       {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinNodes }}
       initContainers:
+
+        ## Wait for at least one controller to be ready -- a controller must be running for satellite to register with
+        - name: wait-for-controller
+          image: bitnami/kubectl
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -exc
+            - |
+              n=0
+              until [ $n -ge 30 ]; do
+                  REPLICA_COUNT=$(kubectl get deploy/${CONTROLLER_DEPLOYMENT_NAME} -n ${CONTROLLER_NAMESPACE} -o template --template='{{ .status.availableReplicas }}')
+                  if [ "${REPLICA_COUNT}" -gt "0" ] ; then
+                      echo "[info] found ${REPLICA_COUNT} available replicas."
+                      break
+                  fi
+                  echo -n "[info] waiting 10 seconds before trying again..."
+                  sleep 10
+              done
+          env:
+            - name: CONTROLLER_DEPLOYMENT_NAME
+              value: "{{ $fullName }}-controller"
+            - name: CONTROLLER_NAMESPACE
+              value: {{ .Release.Namespace }}
+
       {{- if .Values.satellite.ssl.enabled }}
       - name: load-certs
         {{- with .Values.satellite.image }}
@@ -42,6 +68,7 @@ spec:
         - name: satellite-tls
           mountPath: /tls/satellite
       {{- end }}
+
       {{- if .Values.satellite.overwriteDrbdConf }}
       - command:
         - /bin/sh
@@ -66,6 +93,7 @@ spec:
         - name: usr-local-sbin
           mountPath: /host-bin
       {{- end }}
+
       {{- if .Values.satellite.autoJoinNodes }}
       - name: join-cluster
         {{- with .Values.satellite.image }}
@@ -110,6 +138,7 @@ spec:
         {{- end }}
       {{- end }}
       {{- end }}
+
       containers:
       - name: linstor-satellite
         {{- with .Values.satellite.image }}

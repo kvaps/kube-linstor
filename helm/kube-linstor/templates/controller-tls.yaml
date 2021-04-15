@@ -4,6 +4,7 @@
 {{- $altName2 := printf "%s.%s.svc" $cn .Release.Namespace }}
 {{- if .Values.controller.enabled }}
 {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
+{{- if eq .Values.controller.ssl.method "helm" }}
 {{- $ca := genCA (printf "%s-ca" $fullName) 3650 -}}
 ---
 apiVersion: v1
@@ -40,6 +41,48 @@ data:
   tls.key: {{ b64enc .Key }}
   ca.crt: {{ b64enc $ca.Cert }}
   {{- end }}
+{{- end }}
+{{- else if eq .Values.controller.ssl.method "cert-manager" }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullName }}-controller-tls
+spec:
+  secretName: {{ $fullName }}-controller-tls
+  commonName: {{ $cn }}
+  dnsNames:
+  - {{ $cn }}
+  - {{ $altName1 }}
+  - {{ $altName2 }}
+  duration: 87600h # 3650d
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "server auth"
+  issuerRef:
+    name: {{ $fullName }}-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullName }}-client-tls
+spec:
+  secretName: {{ $fullName }}-client-tls
+  commonName: {{ $cn }}
+  duration: 87600h # 3650d
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "client auth"
+  issuerRef:
+    name: {{ $fullName }}-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- else }}
+{{- fail ".Values.controller.ssl.method is not set to <helm|cert-manager>" }}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -1,0 +1,40 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if or .Values.controller.enabled .Values.satellite.enabled }}
+{{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}
+{{- if eq .Values.controller.ssl.method "cert-manager" }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $fullName }}-selfsigning-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullName }}-ca-tls
+spec:
+  commonName: {{ $fullName }}-ca
+  secretName: {{ $fullName }}-ca-tls
+  duration: 87600h # 3650d
+  renewBefore: 8760h # 365d
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "cert sign"
+  isCA: true
+  issuerRef:
+    name: "{{ $fullName }}-selfsigning-issuer"
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $fullName }}-ca-issuer
+spec:
+  ca:
+    secretName: {{ $fullName }}-ca-tls
+{{- end }}
+{{- end }}
+{{- end }}

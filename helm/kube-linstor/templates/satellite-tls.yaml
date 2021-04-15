@@ -1,7 +1,10 @@
 {{- $fullName := include "linstor.fullname" . -}}
 {{- $cn := printf "%s-satellite" $fullName -}}
+{{- $altName1 := printf "%s.%s" $cn .Release.Namespace }}
+{{- $altName2 := printf "%s.%s.svc" $cn .Release.Namespace }}
 {{- if .Values.satellite.enabled }}
 {{- if .Values.satellite.ssl.enabled }}
+{{- if eq .Values.controller.ssl.method "helm" }}
 ---
 apiVersion: v1
 kind: Secret
@@ -14,9 +17,34 @@ metadata:
     "directives.qbec.io/update-policy": "never"
 type: kubernetes.io/tls
 data:
-  {{- with genSelfSignedCert $cn nil nil 3650 }}
+  {{- with genSelfSignedCert $cn nil (list $cn $altName1 $altName2 "localhost") 3650 }}
   tls.crt: {{ b64enc .Cert }}
   tls.key: {{ b64enc .Key }}
   {{- end }}
+{{- else if eq .Values.controller.ssl.method "cert-manager" }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $fullName }}-satellite-tls
+spec:
+  secretName: {{ $fullName }}-satellite-tls
+  commonName: {{ $cn }}
+  dnsNames:
+  - {{ $cn }}
+  - {{ $altName1 }}
+  - {{ $altName2 }}
+  duration: 87600h # 3650d
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "server auth"
+  issuerRef:
+    name: {{ $fullName }}-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- else }}
+{{- fail ".Values.controller.ssl.method is not set to <helm|cert-manager>" }}
+{{- end }}
 {{- end }}
 {{- end }}

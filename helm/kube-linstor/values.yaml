@@ -17,6 +17,8 @@ controller:
   port: 3370
   ssl:
     enabled: true
+    # Certificates generation method: <helm|cert-manager>
+    method: helm
     port: 3371
 
   #hostNetwork: true
@@ -86,6 +88,8 @@ satellite:
   port: 3366
   ssl:
     enabled: true
+    # Certificates generation method: helm/cert-manager
+    method: helm
     port: 3367
 
   # Oerwrite drbd.conf and global_common.conf files. This option will enable

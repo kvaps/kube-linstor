@@ -15,7 +15,7 @@ spec:
       labels:
         app: {{ $fullName }}-satellite
     spec:
-      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf .Values.satellite.autoJoinNodes }}
+      {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
       initContainers:
       {{- if .Values.satellite.ssl.enabled }}
       - name: load-certs
@@ -65,49 +65,6 @@ spec:
           mountPath: /etc/drbd.d
         - name: usr-local-sbin
           mountPath: /host-bin
-      {{- end }}
-      {{- if .Values.satellite.autoJoinNodes }}
-      - name: join-cluster
-        {{- with .Values.satellite.image }}
-        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .pullPolicy }}
-        {{- end }}
-        command:
-          - /bin/sh
-          - -exc
-          - |
-            {{- if .Values.controller.ssl.enabled }}
-            curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}/v1/nodes/${NODE_NAME} && exit 0
-            curl -s -f --cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}/v1/nodes
-            {{- else }}
-            curl -s -f http://{{ $fullName }}-controller:{{ .Values.controller.port }}/v1/nodes/${NODE_NAME} && exit 0
-            curl -s -f -H "Content-Type: application/json" -d "{\"name\": \"${NODE_NAME}\", \"type\": \"satellite\", \"net_interfaces\": [{\"name\": \"default\", \"address\": \"${NODE_IP}\", \"satellite_port\": ${NODE_PORT}, \"satellite_encryption_type\": \"${NODE_ENCRYPTION_TYPE}\"}]}" http://{{ $fullName }}-controller:{{ .Values.controller.port }}/v1/nodes
-            {{- end }}
-        env:
-          {{- if .Values.satellite.ssl.enabled }}
-          - name: NODE_PORT
-            value: "{{ .Values.satellite.ssl.port }}"
-          - name: NODE_ENCRYPTION_TYPE
-            value: "ssl"
-          {{- else }}
-          - name: NODE_PORT
-            value: "{{ .Values.satellite.port }}"
-          - name: NODE_ENCRYPTION_TYPE
-            value: "Plain"
-          {{- end }}
-          - name: NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: NODE_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-        {{- if .Values.controller.ssl.enabled }}
-        volumeMounts:
-          - name: client-tls
-            mountPath: /tls/client
-        {{- end }}
       {{- end }}
       {{- end }}
       containers:
@@ -169,6 +126,76 @@ spec:
           mountPath: /run/lvm
         - name: run-udev
           mountPath: /run/udev
+      {{- if .Values.configurator.enabled }}
+      - name: configurator
+        {{- with .Values.satellite.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .pullPolicy }}
+        {{- end }}
+        command:
+        - /bin/bash
+        - /scripts/configurator.sh
+        env:
+        - name: LS_CONTROLLERS
+        {{- if not .Values.controller.ssl.enabled }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
+        {{- end }}
+        {{- if .Values.satellite.ssl.enabled }}
+        - name: NODE_PORT
+          value: "{{ .Values.satellite.ssl.port }}"
+        - name: NODE_ENCRYPTION_TYPE
+          value: "ssl"
+        {{- else }}
+        - name: NODE_PORT
+          value: "{{ .Values.satellite.port }}"
+        - name: NODE_ENCRYPTION_TYPE
+          value: "Plain"
+        {{- end }}
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: config
+          mountPath: /config
+        {{- if .Values.satellite.ssl.enabled }}
+        - name: config-ssl
+          mountPath: /config/ssl
+          readOnly: true
+        {{- end }}
+        - name: etc-drbd-conf
+          mountPath: /etc/drbd.conf
+        - name: etc-drbd-d
+          mountPath: /etc/drbd.d
+        - name: var-lib-drbd
+          mountPath: /var/lib/drbd
+        - name: var-lib-linstor
+          mountPath: /var/lib/linstor
+        - name: var-lib-linstor-d
+          mountPath: /var/lib/linstor.d
+        - name: lib-modules
+          mountPath: /lib/modules
+        - name: dev
+          mountPath: /dev
+        - name: etc-lvm
+          mountPath: /etc/lvm
+        - name: run-lock-lvm
+          mountPath: /run/lock/lvm
+        - name: logs
+          mountPath: /logs
+        - name: run-lvm
+          mountPath: /run/lvm
+        - name: run-udev
+          mountPath: /run/udev
+      {{- end }}
       hostIPC: true
       hostNetwork: true
       hostPID: true
@@ -232,7 +259,12 @@ spec:
         secret:
           secretName: {{ $fullName }}-satellite-tls
       {{- end }}
-      {{- if and .Values.controller.ssl.enabled .Values.satellite.autoJoinNodes }}
+      {{- if .Values.configurator.enabled }}
+      - name: scripts
+        configMap:
+          name: {{ $fullName }}-configurator
+      {{- end }}
+      {{- if and .Values.controller.ssl.enabled .Values.configurator.enabled }}
       - name: client-tls
         secret:
           secretName: {{ $fullName }}-client-tls

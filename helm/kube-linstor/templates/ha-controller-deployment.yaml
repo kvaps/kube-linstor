@@ -26,7 +26,6 @@ spec:
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
         imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
-        imagePullPolicy: {{ .Values.haController.image.pullPolicy }}
         command:
         - /piraeus-ha-controller
         - --leader-election=true

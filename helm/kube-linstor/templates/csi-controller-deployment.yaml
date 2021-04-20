@@ -21,7 +21,7 @@ spec:
       - name: csi-provisioner
         {{- with .Values.csi.image.csiProvisioner }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --csi-address=$(ADDRESS)
@@ -45,7 +45,7 @@ spec:
       - name: csi-attacher
         {{- with .Values.csi.image.csiAttacher }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --v=5
@@ -66,7 +66,7 @@ spec:
       - name: csi-resizer
         {{- with .Values.csi.image.csiResizer }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --v=5
@@ -89,7 +89,7 @@ spec:
       - name: csi-snapshotter
         {{- with .Values.csi.image.csiSnapshotter }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --timeout=1m
@@ -109,7 +109,7 @@ spec:
       - name: csi-livenessprobe
         {{- with .Values.csi.image.csiLivenessProbe }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --csi-address=$(CSI_ENDPOINT)
@@ -122,7 +122,7 @@ spec:
       - name: linstor-csi-plugin
         {{- with .Values.csi.image.linstorCsiPlugin }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         args:
         - --csi-endpoint=$(CSI_ENDPOINT)

@@ -21,7 +21,7 @@ spec:
       - name: load-certs
         {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         command:
         - /bin/sh
@@ -51,7 +51,7 @@ spec:
           cp -f /config/global_common.conf /etc/drbd.d/global_common.conf
         {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         name: load-drbd-conf
         securityContext:
@@ -70,7 +70,7 @@ spec:
       - name: join-cluster
         {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         command:
           - /bin/sh
@@ -114,7 +114,7 @@ spec:
       - name: linstor-satellite
         {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         securityContext:
           privileged: true

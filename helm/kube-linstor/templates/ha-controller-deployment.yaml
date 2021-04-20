@@ -24,7 +24,7 @@ spec:
       - name: linstor-ha-controller
         {{- with .Values.haController.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         imagePullPolicy: {{ .Values.haController.image.pullPolicy }}
         command:

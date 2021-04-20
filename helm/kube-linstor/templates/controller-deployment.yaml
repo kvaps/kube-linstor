@@ -28,7 +28,7 @@ spec:
       - name: load-certs
         {{- with .Values.controller.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         command:
         - /bin/bash
@@ -67,7 +67,7 @@ spec:
       - name: init-settings
         {{- with .Values.controller.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         command:
         - /bin/bash
@@ -88,7 +88,7 @@ spec:
       - name: linstor-controller
         {{- with .Values.controller.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
-        imagePullPolicy: {{ .PullPolicy }}
+        imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         command:
         - /k8s-await-election

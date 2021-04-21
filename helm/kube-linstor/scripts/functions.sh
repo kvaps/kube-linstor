@@ -1,8 +1,25 @@
 #!/bin/bash
 set -e
 
-load_params() {
-  echo "Loading parameters"
+load_controller_params() {
+  echo "Loading controller parameters"
+  if [ -z "$LS_CONTROLLERS" ]; then
+    echo "Variable LS_CONTROLLERS is not set!"
+    exit 1
+  fi
+  curl="curl -sS -f -H Content-Type:application/json"
+  if [ -f /tls/client/ca.crt ]; then
+    curl="$curl --cacert /tls/client/ca.crt"
+  fi
+  if [ -f /tls/client/tls.crt ] && [ /tls/client/tls.key ]; then
+    curl="$curl --cert /tls/client/tls.crt --key /tls/client/tls.key"
+  fi
+  controller_port=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $NF}')
+  controller_address=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $(NF-1)}')
+}
+
+load_satellite_params() {
+  echo "Loading satellite parameters"
   case "" in
     $NODE_NAME)
     echo "Variable NODE_NAME is not set!"
@@ -12,25 +29,12 @@ load_params() {
     echo "Variable NODE_IP is not set!"
     exit 1
     ;;
-    $LS_CONTROLLERS)
-    echo "Variable LS_CONTROLLERS is not set!"
-    exit 1
-    ;;
   esac
-  curl="curl -sS -f -H Content-Type:application/json"
-  if [ -f /tls/client/ca.crt ]; then
-    curl="$curl --cacert /tls/client/ca.crt"
-  fi
-  if [ -f /tls/client/tls.crt ] && [ /tls/client/tls.key ]; then
-    curl="$curl --cert /tls/client/tls.crt --key /tls/client/tls.key"
-  fi
-  config=/config/linstor_satellite.toml
-  config_type=${NODE_ENCRYPTION_TYPE:-$(awk -F= '$1 == "  type" {gsub("\"","",$2); print $2}' "$config")}
-  config_port=${NODE_PORT:-$(awk -F= '$1 == "  port" {gsub("\"","",$2); print $2}' "$config")}
-  config_type=${config_type:-Plain}
-  config_port=${config_port:-3366}
-  controller_port=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $NF}')
-  controller_address=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $(NF-1)}')
+  satellite_config=/config/linstor_satellite.toml
+  satellite_port_type=${NODE_ENCRYPTION_TYPE:-$(awk -F= '$1 == "  type" {gsub("\"","",$2); print $2}' "$satellite_config")}
+  satellite_port_port=${NODE_PORT:-$(awk -F= '$1 == "  port" {gsub("\"","",$2); print $2}' "$satellite_config")}
+  satellite_port_type=${config_type:-Plain}
+  satellite_port_port=${config_port:-3366}
 }
 
 wait_tcp_port(){
@@ -51,6 +55,18 @@ wait_controller(){
   echo "Service linstor-controller launched"
 }
 
+configure_controller_props(){
+  echo "TODO: Not implemented!"
+}
+
+configure_resource_group(){
+  echo "TODO: Not implemented!"
+}
+
+configure_volume_group(){
+  echo "TODO: Not implemented!"
+}
+
 register_node(){
   echo "Checking if node $NODE_NAME exists in cluster"
   if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}" >/dev/null; then
@@ -68,8 +84,8 @@ register_node(){
     {
       "name": "default",
       "address": "$NODE_IP",
-      "satellite_port": $config_port,
-      "satellite_encryption_type": "$config_type"
+      "satellite_port": $satellite_port,
+      "satellite_encryption_type": "$satellite_encryption_type"
     }
   ]
 }

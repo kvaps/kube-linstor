@@ -9,72 +9,7 @@ data:
   functions.sh: |
     {{- .Files.Get "scripts/functions.sh" | nindent 4 }}
   configurator.controller: |
-    #!/bin/bash
-    set -e
-    . $(dirname $0)/functions.sh
-
-    load_params
-    wait_controller
-
-    {{- with .Values.configurator.controllerConfiguration }}
-    {{- with .props }}
-    configure_controller_props {{ mustToJson . | quote }}
-    {{- end }}
-
-    {{- $selectFilter := dict }}
-    {{- range .resourceGroups }}
-    {{- range $k, $v := .selectFilter }}
-    {{- $_ := set $selectFilter (snakecase $k) $v }}
-    {{- end }}
-    configure_resource_group {{ .name | quote }} {{ mustToJson $selectFilter | quote }} {{ mustToJson .props | quote }}
-    {{- range $vg := .volumeGroups }}
-    configure_volume_group {{ .name | quote }} {{ $vg.volumeNumber | quote }} {{ mustToJson $vg.props | quote }}
-    {{- end }}
-    {{- end }}
-
-    finish
-{{- end }}
+    {{- tpl (.Files.Get "scripts/configurator.controller") . | nindent 4}}
   configurator.node: |
-    #!/bin/bash
-    set -e
-    . $(dirname $0)/functions.sh
-    echo "Node hostname: $HOSTNAME"
-
-    load_params
-    wait_satellite
-    wait_controller
-    {{- with .Values.configurator.autoJoinNodes }}
-    register_node
-    {{- end }}
-
-    {{- range .Values.configurator.nodeConfigurations }}
-    if [[ $HOSTNAME =~ {{ .regex }} ]]; then
-      echo 'Handling configuration for "{{ .regex }}"'
-      {{- with .props }}
-      configure_node_props {{ mustToJson . | quote }}
-      {{- end }}
-      {{- range .interfaces }}
-      configure_interface {{ .name | quote }} {{ .ip | quote }}
-      {{- end }}
-      {{- range .storagePools }}
-      {{- if has .providerKind (list "LVM" "LVM_THIN" "ZFS" "ZFS_THIN") }}
-      {{- if eq .providerKind "LVM" }}
-      if check_lvm_pool {{ index .props "StorDriver/LvmVg" }}; then
-      {{- else if eq .providerKind "LVM_THIN" }}
-      if check_lvmthin_pool {{ index .props "StorDriver/LvmVg" }}/{{ index .props "StorDriver/ThinPool" }}; then
-      {{- else if eq .providerKind "ZFS" }}
-      if check_zfs_pool {{ index .props "StorDriver/ZPool" }}; then
-      {{- else if eq .providerKind "ZFS_THIN" }}
-      if check_zfs_pool {{ index .props "StorDriver/ZPoolThin" }}; then
-      {{- end }}
-      {{- end }}
-      configure_storage_pool {{ .name | quote }} {{ .providerKind | quote }} {{ mustToJson .props | quote }}
-      {{- if has .providerKind (list "LVM" "LVM_THIN" "ZFS" "ZFS_THIN") }}
-      fi
-      {{- end }}
-      {{- end }}
-    fi
-    {{- end }}
-
-    finish
+    {{- tpl (.Files.Get "scripts/configurator.node") . | nindent 4 }}
 {{- end }}

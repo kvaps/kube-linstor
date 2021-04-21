@@ -3,7 +3,7 @@ set -e
 
 load_params() {
   echo "Loading parameters"
-  curl="curl -sS -f"
+  curl="curl -sS -f -H Content-Type:application/json"
   if [ -f /tls/client/ca.crt ]; then
     curl="$curl --cacert /tls/client/ca.crt"
   fi
@@ -38,9 +38,9 @@ wait_controller(){
 }
 
 register_node(){
-  echo "Checking if node $NODE_NAME already exists in cluster"
+  echo "Checking if node $NODE_NAME exists in cluster"
   if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}" >/dev/null; then
-    echo "Node $NODE_NAME exists in cluster, skip adding..."
+    echo "Node $NODE_NAME already exists in cluster, skip adding..."
     return 0
   fi
   echo "Node $NODE_NAME does not exists in cluster"
@@ -89,8 +89,8 @@ configure_interface(){
 EOT
   )"
 
-  echo "Checking if interface $interface_name already exists on node $NODE_NAME"
-  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$1" >/dev/null; then
+  echo "Checking if interface $interface_name exists on node $NODE_NAME"
+  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name" >/dev/null; then
     echo "Interface $interface_name already exists on node $NODE_NAME, updating..."
     (set -x; $curl -X PUT -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name")
   else
@@ -100,22 +100,30 @@ EOT
   echo
 }
 
-# TODO: incompleted
-add_storage_pools(){
-  local storage_pool_json="$(cat <<EOT
+configure_storage_pool(){
+  local sp_name=$1
+  local sp_provider=$2
+  local sp_props_json=$3
+
+  local sp_json="$(cat <<EOT
 {
-  "name": "lvm-thin",
-  "providerKind": "LVM_THIN",
-  "props": {
-    "StorDriver/LvmVg": "drbdpool",
-    "StorDriver/ThinPool": "thinpool"
-  }
+  "storage_pool_name": "$sp_name",
+  "provider_kind": "$sp_provider",
+  "props": $sp_props_json
 }
 
 EOT
   )"
 
-  (set -x; $curl -X POST -d "$storage_pool_json" $LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools)
+  echo "Checking if storage-pool $sp_name exists on node $NODE_NAME"
+  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name" >/dev/null; then
+    echo "Storage-pool $sp_name already exists on node $NODE_NAME, updating..."
+    (set -x; $curl -X PUT -d "{\"override_props\": $sp_props_json}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name")
+  else
+    echo "Storage-pool $sp_name does not exists on node $NODE_NAME, adding..."
+    (set -x; $curl -X POST -d "$sp_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools")
+  fi
+  echo
 }
 
 load_params
@@ -123,6 +131,8 @@ wait_satellite
 wait_controller
 register_node
 configure_interface "data" "10.29.0.0/16"
+configure_storage_pool "DfltDisklessStorPool" "DISKLESS" '{"PrefNic": "data"}'
+configure_storage_pool "blabla" "DISKLESS" '{"PrefNic": "data"}'
 
 #add_storage_pools
 

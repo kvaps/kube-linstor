@@ -109,8 +109,8 @@ satellite:
   #     effect: NoSchedule
 
 # ------------------------------------------------------------------------------
-# Configurator script for linstor-satellite nodes.
-# It allows you to join nodes and detect storage-pools on them automatically.
+# Linstor configuration script parameters. It enables automatic join nodes to
+# the cluster and allows you declaratively configure basic linstor entities.
 # ------------------------------------------------------------------------------
 configurator:
   enabled: true
@@ -118,38 +118,33 @@ configurator:
   # Join the nodes automatically at init
   autoJoinNodes: true
 
-  controllerConfiguration:
-    props: {}
-    resourceGroups:
-    - name: DfltRscGrp
-      props: {}
-      volumeGroups:
-      - volumeNumber: 0
-        props: {}
-      selectFilter:
-        PlaceCount: 2
-        StoragePool: thindata
-        LayerStack:
-        - DRBD
-        - STORAGE
-
-  nodeConfigurations:
-  - regex: ".*"
-    props:
-      Aux/aaa: bbb
-    interfaces:
-    - name: data
-      ip: 10.29.0.0/16
-    storagePools:
-    - name: DfltDisklessStorPool
-      providerKind: DISKLESS
-      props:
-        PrefNic: data
-
-  #- regex: ".*"
+  #controllerConfiguration:
   #  props: {}
-  #  interfaces: []
+  #  resourceGroups:
+  #  - name: DfltRscGrp
+  #    props: {}
+  #    volumeGroups:
+  #    - volumeNumber: 0
+  #      props: {}
+  #    selectFilter:
+  #      PlaceCount: 2
+  #      StoragePool: lvm-thin
+  #      LayerStack:
+  #      - DRBD
+  #      - STORAGE
+
+  #nodeConfigurations:
+  #- regex: ".*" # Regular expression to match node names
+  #  props:
+  #    Aux/aaa: bbb
+  #  interfaces:
+  #  - name: data
+  #    ip: 10.29.0.0/16 # specify subnet for additional interface on node
   #  storagePools:
+  #  - name: DfltDisklessStorPool
+  #    providerKind: DISKLESS
+  #    props:
+  #      PrefNic: data
   #  - name: lvm-thick
   #    providerKind: LVM
   #    props:

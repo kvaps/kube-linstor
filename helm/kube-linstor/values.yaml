@@ -119,7 +119,8 @@ configurator:
   autoJoinNodes: true
 
   #controller:
-  #  props: {}
+  #  props:
+  #    DrbdOptions/Net/csums-alg: crc32
   #  resourceGroups:
   #  - name: DfltRscGrp
   #    props: {}

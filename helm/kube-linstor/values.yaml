@@ -118,7 +118,7 @@ configurator:
   # Join the nodes automatically at init
   autoJoinNodes: true
 
-  #controllerConfiguration:
+  #controller:
   #  props: {}
   #  resourceGroups:
   #  - name: DfltRscGrp
@@ -133,7 +133,7 @@ configurator:
   #      - DRBD
   #      - STORAGE
 
-  #nodeConfigurations:
+  #nodes:
   #- regex: ".*" # Regular expression to match node names
   #  props:
   #    Aux/aaa: bbb

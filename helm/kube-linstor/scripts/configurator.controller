@@ -5,7 +5,7 @@ set -e
 load_controller_params
 wait_controller
 
-{{- with .Values.configurator.controllerConfiguration }}
+{{- with .Values.configurator.controller }}
 {{- with .props }}
 configure_controller_props {{ mustToJson . | quote }}
 {{- end }}

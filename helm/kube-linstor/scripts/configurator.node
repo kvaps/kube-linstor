@@ -11,8 +11,8 @@ wait_controller
 register_node
 {{- end }}
 
-{{- range .Values.configurator.nodeConfigurations }}
-if [[ $HOSTNAME =~ {{ required "A valid .Values.configurator.nodeConfigurations[].regex entry required!" .regex }} ]]; then
+{{- range .Values.configurator.nodes }}
+if [[ $HOSTNAME =~ {{ required "A valid .Values.configurator.nodes[].regex entry required!" .regex }} ]]; then
   echo 'Handling configuration for "{{ .regex }}"'
   {{- with .props }}
   configure_node_props {{ mustToJson . | quote }}

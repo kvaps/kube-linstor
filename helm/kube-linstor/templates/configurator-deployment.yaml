@@ -1,5 +1,5 @@
 {{- $fullName := include "linstor.fullname" . -}}
-{{- if and .Values.configurator.enabled .Values.configurator.controllerConfiguration }}
+{{- if and .Values.configurator.enabled .Values.configurator.controller }}
 ---
 apiVersion: apps/v1
 kind: Deployment

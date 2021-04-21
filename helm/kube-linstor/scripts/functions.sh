@@ -57,7 +57,8 @@ wait_controller(){
 
 configure_controller_props(){
   echo "Setting controller properties..."
-  (set -x; $curl -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/controller/properties")
+  (set -x; $curl -X POST -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/controller/properties")
+  echo
 }
 
 configure_resource_group(){
@@ -65,7 +66,7 @@ configure_resource_group(){
   local rg_selectfilter_json=$2
   local rg_props_json=$3
 
-  local sp_json="$(cat <<EOT
+  local rg_json="$(cat <<EOT
 {
   "name": "$rg_name",
   "select_filter": $rg_selectfilter_json,
@@ -90,10 +91,10 @@ configure_volume_group(){
   local vg_number=$2
   local vg_props_json=$3
 
-  local sp_json="$(cat <<EOT
+  local vg_json="$(cat <<EOT
 {
   "volume_number": "$vg_number",
-  "props": $rg_props_json
+  "props": $vg_props_json
 }
 EOT
   )"
@@ -175,6 +176,7 @@ EOT
 configure_node_props(){
   echo "Setting node properties for $NODE_NAME..."
   (set -x; $curl -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}")
+  echo
 }
 
 configure_storage_pool(){

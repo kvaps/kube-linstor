@@ -129,7 +129,7 @@ configurator:
   #      props: {}
   #    selectFilter:
   #      PlaceCount: 2
-  #      StoragePool: lvm-thin
+  #      StoragePoolList: ["lvm-thin"]
   #      LayerStack:
   #      - DRBD
   #      - STORAGE

@@ -56,15 +56,57 @@ wait_controller(){
 }
 
 configure_controller_props(){
-  echo "TODO: Not implemented!"
+  echo "Setting controller properties..."
+  (set -x; $curl -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/controller/properties")
 }
 
 configure_resource_group(){
-  echo "TODO: Not implemented!"
+  local rg_name=$1
+  local rg_selectfilter_json=$2
+  local rg_props_json=$3
+
+  local sp_json="$(cat <<EOT
+{
+  "name": "$rg_name",
+  "select_filter": $rg_selectfilter_json,
+  "props": $rg_props_json
+}
+EOT
+  )"
+
+  echo "Checking if resouce-group $rg_name exists"
+  if $curl "$LS_CONTROLLERS/v1/resource-groups/$rg_name" >/dev/null; then
+    echo "Resource-group $rg_name already exists, updating..."
+    (set -x; $curl -X PUT -d "{\"select_filter\": $rg_selectfilter_json, \"override_props\": $rg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name")
+  else
+    echo "Resource-group $rg_name does not exists, adding..."
+    (set -x; $curl -X POST -d "$rg_json" "$LS_CONTROLLERS/v1/resource-groups")
+  fi
+  echo
 }
 
 configure_volume_group(){
-  echo "TODO: Not implemented!"
+  local rg_name=$1
+  local vg_number=$2
+  local vg_props_json=$3
+
+  local sp_json="$(cat <<EOT
+{
+  "volume_number": "$vg_number",
+  "props": $rg_props_json
+}
+EOT
+  )"
+
+  echo "Checking if volume-group $vg_number exists for resouce-grep $rg_name"
+  if $curl "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number" >/dev/null; then
+    echo "Volume-group $vg_number already exists for resource-group $rg_name, updating..."
+    (set -x; $curl -X PUT -d "{\"override_props\": $vg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number")
+  else
+    echo "Volume-group $vg_number does not exists for resource-group $rg_name, adding..."
+    (set -x; $curl -X POST -d "$vg_json" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups")
+  fi
+  echo
 }
 
 register_node(){

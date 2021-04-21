@@ -10,8 +10,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: {{ $fullName }}-configurator
@@ -47,7 +45,7 @@ spec:
           mountPath: /etc/linstor
         {{- if .Values.controller.ssl.enabled }}
         - name: client-tls
-          mountPath: /tls
+          mountPath: /tls/client
         {{- end }}
       serviceAccountName: {{ $fullName }}-controller
       priorityClassName: system-node-critical

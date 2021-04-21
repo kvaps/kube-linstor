@@ -19,6 +19,8 @@ spec:
     metadata:
       labels:
         app: {{ $fullName }}-controller
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/controller-secret.yaml") . | sha256sum }}
     spec:
       imagePullSecrets:
         {{- toYaml .Values.controller.image.pullSecrets | nindent 8 }}

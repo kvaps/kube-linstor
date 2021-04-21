@@ -14,6 +14,11 @@ spec:
     metadata:
       labels:
         app: {{ $fullName }}-satellite
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/satellite-configmap.yaml") . | sha256sum }}
+        {{- if .Values.configurator.enabled }}
+        checksum/scripts: {{ include (print $.Template.BasePath "/configurator-configmap.yaml") . | sha256sum }}
+        {{- end }}
     spec:
       {{- if or .Values.satellite.ssl.enabled .Values.satellite.overwriteDrbdConf }}
       initContainers:

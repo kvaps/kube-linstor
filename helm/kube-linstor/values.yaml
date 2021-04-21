@@ -118,6 +118,41 @@ configurator:
   # Join the nodes automatically at init
   autoJoinNodes: true
 
+  configurations:
+  - nodesRegex: "*"
+    props:
+      "Aux/aaa": bbb
+    interfaces:
+    - name: data
+      ip: 10.29.0.0/16
+    storagePools:
+    - name: DfltDisklessStorPool
+      providerKind: DISKLESS
+      props:
+        PrefNic: data
+
+  #- nodesRegex: "*"
+  #  props: {}
+  #  interfaces: []
+  #  storagePools:
+  #  - name: lvm-thick
+  #    providerKind: LVM
+  #    props:
+  #      StorDriver/LvmVg: drbdpool
+  #  - name: lvm-thin
+  #    providerKind: LVM_THIN
+  #    props:
+  #      StorDriver/LvmVg: drbdpool
+  #      StorDriver/ThinPool: thinpool
+  #  - name: my-linstor-zpool
+  #    providerKind: ZFS
+  #    props:
+  #      StorDriver/ZPool: for-linstor
+  #  - name: my-linstor-zpool-thin
+  #    providerKind: ZFS_THIN
+  #    props:
+  #      StorDriver/ZPoolThin: for-linstor
+
 # ------------------------------------------------------------------------------
 # Linstor CSI driver provides compatibility level for adding Linstor support
 # for Kubernetes

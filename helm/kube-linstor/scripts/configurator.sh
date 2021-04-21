@@ -1,9 +1,9 @@
 #!/bin/bash
+set -e
 
 load_params() {
-  set -e
   echo "Loading parameters"
-  curl="curl -s -f"
+  curl="curl -sS -f"
   if [ -f /tls/client/ca.crt ]; then
     curl="$curl --cacert /tls/client/ca.crt"
   fi
@@ -17,7 +17,6 @@ load_params() {
   config_port=${config_port:-3366}
   controller_port=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $NF}')
   controller_address=$(echo "$LS_CONTROLLERS" | awk -F'[/:]+' '{print $(NF-1)}')
-  set +e
 }
 
 wait_tcp_port(){
@@ -38,7 +37,7 @@ wait_controller(){
   echo "Service linstor-controller launched"
 }
 
-add_node(){
+register_node(){
   echo "Checking if node $NODE_NAME already exists in cluster"
   if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}" >/dev/null; then
     echo "Node $NODE_NAME exists in cluster, skip adding..."
@@ -63,12 +62,47 @@ add_node(){
 EOT
   )"
   
-  (set -x; $curl -d "$node_json" "$LS_CONTROLLERS/v1/nodes")
+  (set -x; $curl -X POST -d "$node_json" "$LS_CONTROLLERS/v1/nodes")
+  echo
+}
+
+src_ip(){
+  ip -o route get "$1" | awk -F "src " '{ gsub(" .*", "", $2); print $2 }'
+}
+
+configure_interface(){
+  local interface_name=$1
+  local interface_ip=$(src_ip $2)
+
+  echo "Compuited address for interface $interface_name: $interface_ip (determined from $2)"
+
+  if [ "$interface_ip" = "$NODE_IP" ]; then
+    echo "IP address $interface_ip matches the default node IP address, assuming it does not existing on the node, skipping..."
+    return 0
+  fi
+
+  local interface_json="$(cat <<EOT
+{
+  "name": "${interface_name}",
+  "address": "${interface_ip}"
+}
+EOT
+  )"
+
+  echo "Checking if interface $interface_name already exists on node $NODE_NAME"
+  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$1" >/dev/null; then
+    echo "Interface $interface_name already exists on node $NODE_NAME, updating..."
+    (set -x; $curl -X PUT -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name")
+  else
+    echo "Interface $interface_name does not exists on node $NODE_NAME, adding..."
+    (set -x; $curl -X POST -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces")
+  fi
+  echo
 }
 
 # TODO: incompleted
 add_storage_pools(){
-  storage_pool_json="$(cat <<EOT
+  local storage_pool_json="$(cat <<EOT
 {
   "name": "lvm-thin",
   "providerKind": "LVM_THIN",
@@ -81,13 +115,15 @@ add_storage_pools(){
 EOT
   )"
 
-  (set -x; $curl -d "$storage_pool_json" $LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools)
+  (set -x; $curl -X POST -d "$storage_pool_json" $LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools)
 }
 
 load_params
 wait_satellite
 wait_controller
-add_node
+register_node
+configure_interface "data" "10.29.0.0/16"
+
 #add_storage_pools
 
 echo "Configuration has been successfully finished"

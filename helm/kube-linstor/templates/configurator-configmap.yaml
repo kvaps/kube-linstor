@@ -1,0 +1,11 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.configurator.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-configurator
+data:
+  configurator.sh: |
+    {{- .Files.Get "scripts/configurator.sh" | nindent 4 }}
+{{- end }}

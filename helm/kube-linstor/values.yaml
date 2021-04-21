@@ -96,9 +96,6 @@ satellite:
   # usage-count=no and udev-always-use-vnr options by default
   overwriteDrbdConf: true
 
-  # Join the nodes automatically at init
-  autoJoinNodes: true
-
   # How many nodes can simultaneously download new image
   update:
     maxUnavailable: 40
@@ -110,6 +107,16 @@ satellite:
   #   - key: node-role.kubernetes.io/master
   #     operator: Exists
   #     effect: NoSchedule
+
+# ------------------------------------------------------------------------------
+# Configurator script for linstor-satellite nodes.
+# It allows you to join nodes and detect storage-pools on them automatically.
+# ------------------------------------------------------------------------------
+configurator:
+  enabled: true
+
+  # Join the nodes automatically at init
+  autoJoinNodes: true
 
 # ------------------------------------------------------------------------------
 # Linstor CSI driver provides compatibility level for adding Linstor support

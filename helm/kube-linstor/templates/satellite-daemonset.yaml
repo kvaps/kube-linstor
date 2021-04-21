@@ -164,6 +164,10 @@ spec:
         volumeMounts:
         - name: scripts
           mountPath: /scripts
+        {{- if .Values.controller.ssl.enabled }}
+        - name: client-tls
+          mountPath: /tls/client
+        {{- end }}
         - name: config
           mountPath: /config
         {{- if .Values.satellite.ssl.enabled }}

@@ -139,7 +139,7 @@ spec:
         {{- end }}
         command:
         - /bin/bash
-        - /scripts/configurator.sh
+        - /scripts/configurator.node
         env:
         - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}

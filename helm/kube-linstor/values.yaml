@@ -118,6 +118,21 @@ configurator:
   # Join the nodes automatically at init
   autoJoinNodes: true
 
+  controllerConfiguration:
+    props: {}
+    resourceGroups:
+    - name: DfltRscGrp
+      props: {}
+      volumeGroups:
+      - volumeNumber: 0
+        props: {}
+      selectFilter:
+        PlaceCount: 2
+        StoragePool: thindata
+        LayerStack:
+        - DRBD
+        - STORAGE
+
   nodeConfigurations:
   - regex: ".*"
     props:

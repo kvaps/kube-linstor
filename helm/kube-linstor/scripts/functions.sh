@@ -3,6 +3,20 @@ set -e
 
 load_params() {
   echo "Loading parameters"
+  case "" in
+    $NODE_NAME)
+    echo "Variable NODE_NAME is not set!"
+    exit 1
+    ;;
+    $NODE_IP)
+    echo "Variable NODE_IP is not set!"
+    exit 1
+    ;;
+    $LS_CONTROLLERS)
+    echo "Variable LS_CONTROLLERS is not set!"
+    exit 1
+    ;;
+  esac
   curl="curl -sS -f -H Content-Type:application/json"
   if [ -f /tls/client/ca.crt ]; then
     curl="$curl --cacert /tls/client/ca.crt"
@@ -126,16 +140,9 @@ EOT
   echo
 }
 
-load_params
-wait_satellite
-wait_controller
-register_node
-configure_interface "data" "10.29.0.0/16"
-configure_storage_pool "DfltDisklessStorPool" "DISKLESS" '{"PrefNic": "data"}'
-configure_storage_pool "blabla" "DISKLESS" '{"PrefNic": "data"}'
+finish(){
+  echo "Configuration has been successfully finished"
+  exec sleep infinity
+}
 
-#add_storage_pools
 
-echo "Configuration has been successfully finished"
-set -x
-exec sleep infinity

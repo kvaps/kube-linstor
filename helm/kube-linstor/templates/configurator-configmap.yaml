@@ -6,6 +6,26 @@ kind: ConfigMap
 metadata:
   name: {{ $fullName }}-configurator
 data:
+  functions.sh: |
+    {{- .Files.Get "scripts/functions.sh" | nindent 4 }}
   configurator.sh: |
-    {{- .Files.Get "scripts/configurator.sh" | nindent 4 }}
+    #!/bin/bash
+    set -e
+    . $(dirname $0)/functions.sh
+    echo "Node hostname $HOSTNAME"
+
+    load_params
+    wait_satellite
+    wait_controller
+    register_node
+
+    case "$HOSTNAME" in *)
+      echo 'Handling configuration for "*"'
+      configure_interface "data" "10.29.0.0/16"
+      configure_storage_pool "DfltDisklessStorPool" "DISKLESS" '{"PrefNic": "data"}'
+      configure_storage_pool "blabla" "DISKLESS" '{"PrefNic": "data"}'
+      ;;
+    esac
+
+    finish
 {{- end }}

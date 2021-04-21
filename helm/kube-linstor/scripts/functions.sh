@@ -75,7 +75,7 @@ register_node(){
 }
 EOT
   )"
-  
+
   (set -x; $curl -X POST -d "$node_json" "$LS_CONTROLLERS/v1/nodes")
   echo
 }

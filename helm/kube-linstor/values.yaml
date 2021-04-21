@@ -118,8 +118,8 @@ configurator:
   # Join the nodes automatically at init
   autoJoinNodes: true
 
-  configurations:
-  - nodesRegex: "*"
+  nodeConfigurations:
+  - regex: ".*"
     props:
       "Aux/aaa": bbb
     interfaces:

@@ -12,20 +12,26 @@ data:
     #!/bin/bash
     set -e
     . $(dirname $0)/functions.sh
-    echo "Node hostname $HOSTNAME"
+    echo "Node hostname: $HOSTNAME"
 
     load_params
     wait_satellite
     wait_controller
+    {{- with .Values.configurator.autoJoinNodes }}
     register_node
+    {{- end }}
 
-    case "$HOSTNAME" in *)
-      echo 'Handling configuration for "*"'
-      configure_interface "data" "10.29.0.0/16"
-      configure_storage_pool "DfltDisklessStorPool" "DISKLESS" '{"PrefNic": "data"}'
-      configure_storage_pool "blabla" "DISKLESS" '{"PrefNic": "data"}'
-      ;;
-    esac
+    {{- range .Values.configurator.nodeConfigurations }}
+    if [[ $HOSTNAME =~ {{ .regex }} ]]; then
+      echo 'Handling configuration for "{{ .regex }}"'
+      {{- range .interfaces }}
+      configure_interface {{ .name | quote }} {{ .ip | quote }}
+      {{- end }}
+      {{- range .storagePools }}
+      configure_storage_pool {{ .name | quote }} {{ .providerKind | quote }} {{ mustToJson .props | quote }}
+      {{- end }}
+    fi
+    {{- end }}
 
     finish
 {{- end }}

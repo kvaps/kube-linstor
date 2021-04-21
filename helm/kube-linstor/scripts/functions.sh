@@ -114,6 +114,11 @@ EOT
   echo
 }
 
+configure_node_props(){
+  echo "Setting node properties for $NODE_NAME..."
+  (set -x; $curl -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}")
+}
+
 configure_storage_pool(){
   local sp_name=$1
   local sp_provider=$2
@@ -140,9 +145,38 @@ EOT
   echo
 }
 
+check_lvm_pool(){
+  if vgs "$1" >/dev/null 2>&1; then
+    echo "Volume group $1 found on node $NODE_NAME"
+    return 0
+  else
+    echo "Volume group $1 didn't found on node $NODE_NAME"
+    return 1
+  fi
+}
+
+check_lvmthin_pool(){
+  if lvs "$1" >/dev/null 2>&1; then
+    echo "Logical volume $1 found on node $NODE_NAME"
+    return 0
+  else
+    echo "Logical volume $1 didn't found on node $NODE_NAME"
+    return 1
+  fi
+}
+
+check_zfs_pool(){
+  if zfs list "$1" >/dev/null 2>&1; then
+    echo "ZFS dataset $1 found on node $NODE_NAME"
+    return 0
+  else
+    echo "zfs dataset $1 didn't found on node $NODE_NAME"
+    return 1
+  fi
+}
+
 finish(){
   echo "Configuration has been successfully finished"
   exec sleep infinity
 }
-
 

@@ -121,7 +121,7 @@ configurator:
   nodeConfigurations:
   - regex: ".*"
     props:
-      "Aux/aaa": bbb
+      Aux/aaa: bbb
     interfaces:
     - name: data
       ip: 10.29.0.0/16
@@ -131,7 +131,7 @@ configurator:
       props:
         PrefNic: data
 
-  #- nodesRegex: "*"
+  #- regex: ".*"
   #  props: {}
   #  interfaces: []
   #  storagePools:

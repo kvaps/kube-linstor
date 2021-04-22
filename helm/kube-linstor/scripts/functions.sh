@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 load_controller_params() {
   echo "Loading controller parameters"

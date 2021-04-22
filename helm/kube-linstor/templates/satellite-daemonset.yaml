@@ -166,6 +166,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: scripts
           mountPath: /scripts

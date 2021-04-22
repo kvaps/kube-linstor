@@ -122,7 +122,7 @@ register_node(){
   echo "Adding node $NODE_NAME to the cluster"
   node_json="$(cat <<EOT
 {
-  "name": "",
+  "name": "$NODE_NAME",
   "type": "satellite",
   "net_interfaces": [
     {

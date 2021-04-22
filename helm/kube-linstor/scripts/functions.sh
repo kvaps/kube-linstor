@@ -1,13 +1,17 @@
 #!/bin/bash
 
+curl_and_log() {
+  echo "request: $curl $@" | awk '{print "  " $0}'
+  $curl -o - -w "\n%{http_code}\n" "$@" | awk '{l[NR] = $0} END {printf "  response: "; for (i=1; i<=NR-1; i++) print l[i]}; END{printf "\n  status: " $0 ; if ($0<200||$0>299) {print " (error)"; exit 1} else print " (ok)"}'
+}
+
 load_controller_params() {
   echo "Loading controller parameters"
   if [ -z "$LS_CONTROLLERS" ]; then
     echo "Variable LS_CONTROLLERS is not set!"
     exit 1
   fi
-  # TODO: --fail-with-body (curl >=7.76.0)
-  curl="curl -sS -f -H Content-Type:application/json"
+  curl="curl -sS -H Content-Type:application/json"
   if [ -f /tls/client/ca.crt ]; then
     curl="$curl --cacert /tls/client/ca.crt"
   fi
@@ -57,7 +61,7 @@ wait_controller(){
 
 configure_controller_props(){
   echo "Setting controller properties..."
-  (set -x; $curl -X POST -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/controller/properties")
+  curl_and_log -X POST -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/controller/properties"
   echo
 }
 
@@ -76,12 +80,12 @@ EOT
   )"
 
   echo "Checking if resouce-group $rg_name exists"
-  if $curl "$LS_CONTROLLERS/v1/resource-groups/$rg_name" >/dev/null; then
+  if $curl -f "$LS_CONTROLLERS/v1/resource-groups/$rg_name" >/dev/null; then
     echo "Resource-group $rg_name already exists, updating..."
-    (set -x; $curl -X PUT -d "{\"select_filter\": $rg_selectfilter_json, \"override_props\": $rg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name")
+    curl_and_log -X PUT -d "{\"select_filter\": $rg_selectfilter_json, \"override_props\": $rg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name"
   else
     echo "Resource-group $rg_name does not exists, adding..."
-    (set -x; $curl -X POST -d "$rg_json" "$LS_CONTROLLERS/v1/resource-groups")
+    curl_and_log -X POST -d "$rg_json" "$LS_CONTROLLERS/v1/resource-groups"
   fi
   echo
 }
@@ -100,19 +104,19 @@ EOT
   )"
 
   echo "Checking if volume-group $vg_number exists for resouce-grep $rg_name"
-  if $curl "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number" >/dev/null; then
+  if $curl -f "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number" >/dev/null; then
     echo "Volume-group $vg_number already exists for resource-group $rg_name, updating..."
-    (set -x; $curl -X PUT -d "{\"override_props\": $vg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number")
+    curl_and_log -X PUT -d "{\"override_props\": $vg_props_json}" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups/$vg_number"
   else
     echo "Volume-group $vg_number does not exists for resource-group $rg_name, adding..."
-    (set -x; $curl -X POST -d "$vg_json" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups")
+    curl_and_log -X POST -d "$vg_json" "$LS_CONTROLLERS/v1/resource-groups/$rg_name/volume-groups"
   fi
   echo
 }
 
 register_node(){
   echo "Checking if node $NODE_NAME exists in cluster"
-  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}" >/dev/null; then
+  if $curl -f "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}" >/dev/null; then
     echo "Node $NODE_NAME already exists in cluster, skip adding..."
     return 0
   fi
@@ -135,7 +139,7 @@ register_node(){
 EOT
   )"
 
-  (set -x; $curl -X POST -d "$node_json" "$LS_CONTROLLERS/v1/nodes")
+  curl_and_log -X POST -d "$node_json" "$LS_CONTROLLERS/v1/nodes"
   echo
 }
 
@@ -163,19 +167,19 @@ EOT
   )"
 
   echo "Checking if interface $interface_name exists on node $NODE_NAME"
-  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name" >/dev/null; then
+  if $curl -f "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name" >/dev/null; then
     echo "Interface $interface_name already exists on node $NODE_NAME, updating..."
-    (set -x; $curl -X PUT -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name")
+    curl_and_log -X PUT -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces/$interface_name"
   else
     echo "Interface $interface_name does not exists on node $NODE_NAME, adding..."
-    (set -x; $curl -X POST -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces")
+    curl_and_log -X POST -d "$interface_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/net-interfaces"
   fi
   echo
 }
 
 configure_node_props(){
   echo "Setting node properties for $NODE_NAME..."
-  (set -x; $curl -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}")
+  curl_and_log -X PUT -d "{\"override_props\": $1}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}"
   echo
 }
 
@@ -195,12 +199,12 @@ EOT
   )"
 
   echo "Checking if storage-pool $sp_name exists on node $NODE_NAME"
-  if $curl "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name" >/dev/null; then
+  if $curl -f "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name" >/dev/null; then
     echo "Storage-pool $sp_name already exists on node $NODE_NAME, updating..."
-    (set -x; $curl -X PUT -d "{\"override_props\": $sp_props_json}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name")
+    curl_and_log -X PUT -d "{\"override_props\": $sp_props_json}" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools/$sp_name"
   else
     echo "Storage-pool $sp_name does not exists on node $NODE_NAME, adding..."
-    (set -x; $curl -X POST -d "$sp_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools")
+    curl_and_log -X POST -d "$sp_json" "$LS_CONTROLLERS/v1/nodes/${NODE_NAME}/storage-pools"
   fi
   echo
 }

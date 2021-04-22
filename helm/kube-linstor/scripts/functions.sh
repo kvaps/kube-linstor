@@ -7,6 +7,7 @@ load_controller_params() {
     echo "Variable LS_CONTROLLERS is not set!"
     exit 1
   fi
+  # TODO: --fail-with-body (curl >=7.76.0)
   curl="curl -sS -f -H Content-Type:application/json"
   if [ -f /tls/client/ca.crt ]; then
     curl="$curl --cacert /tls/client/ca.crt"

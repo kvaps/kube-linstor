@@ -31,10 +31,10 @@ load_satellite_params() {
     ;;
   esac
   satellite_config=/config/linstor_satellite.toml
-  satellite_port_type=${NODE_ENCRYPTION_TYPE:-$(awk -F= '$1 == "  type" {gsub("\"","",$2); print $2}' "$satellite_config")}
-  satellite_port_port=${NODE_PORT:-$(awk -F= '$1 == "  port" {gsub("\"","",$2); print $2}' "$satellite_config")}
-  satellite_port_type=${config_type:-Plain}
-  satellite_port_port=${config_port:-3366}
+  satellite_encryption_type=${NODE_ENCRYPTION_TYPE:-$(awk -F= '$1 == "  type" {gsub("\"","",$2); print $2}' "$satellite_config")}
+  satellite_port=${NODE_PORT:-$(awk -F= '$1 == "  port" {gsub("\"","",$2); print $2}' "$satellite_config")}
+  satellite_encryption_type=${satellite_encryption_type:-Plain}
+  satellite_port=${satellite_port:-3366}
 }
 
 wait_tcp_port(){
@@ -44,8 +44,8 @@ wait_tcp_port(){
 }
 
 wait_satellite(){
-  echo "Waiting linstor-satellite to launch on localhost:$config_port..."
-  wait_tcp_port localhost "$config_port"
+  echo "Waiting linstor-satellite to launch on localhost:$satellite_port..."
+  wait_tcp_port localhost "$satellite_port"
   echo "Service linstor-satellite launched"
 }
 

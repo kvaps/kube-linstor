@@ -34,6 +34,7 @@ spec:
   - {{ $cn }}
   - {{ $altName1 }}
   - {{ $altName2 }}
+  - localhost
   duration: 87600h # 3650d
   usages:
   - "signing"

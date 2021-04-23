@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+. $(dirname $0)/functions.sh
+
+load_controller_params
+wait_controller
+
+{{- with .Values.configurator.controller }}
+{{- with .props }}
+configure_controller_props {{ mustToJson . | quote }}
+{{- end }}
+
+{{- $selectFilter := dict }}
+{{- range .resourceGroups }}
+{{- range $k, $v := .selectFilter }}
+{{- $_ := set $selectFilter (snakecase $k) $v }}
+{{- end }}
+configure_resource_group {{ required "A valid .Values.configurator.controller.resourceGroups[].name entry required!" .name | quote }} {{ mustToJson $selectFilter | quote }} {{ mustToJson (.props | default (dict)) | quote }}
+{{- $rg_name := .name }}
+{{- range .volumeGroups }}
+configure_volume_group {{ $rg_name | quote }} {{ required "A valid .Values.configurator.controller.resourceGroups[].volumeGroups[].volumeNumber entry required!" .volumeNumber | quote }} {{ mustToJson (.props | default (dict)) | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+finish

@@ -1,0 +1,73 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if and .Values.configurator.enabled .Values.configurator.controller }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ $fullName }}-configurator
+  name: {{ $fullName }}-configurator
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-configurator
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-configurator
+      annotations:
+        checksum/scripts: {{ printf "%s\n%s" (.Files.Get "scripts/functions.sh") (tpl (.Files.Get "scripts/configurator.controller") .) | sha256sum }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.satellite.image.pullSecrets | nindent 8 }}
+      containers:
+      - name: configurator-controller
+        {{- with .Values.satellite.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .pullPolicy }}
+        {{- end }}
+        command:
+        - /bin/bash
+        - /scripts/configurator.controller
+        env:
+        - name: LS_CONTROLLERS
+        {{- if not .Values.controller.ssl.enabled }}
+          value: http://{{ $fullName }}-controller:{{ .Values.controller.port }}
+        {{- else }}
+          value: https://{{ $fullName }}-controller:{{ .Values.controller.ssl.port }}
+        {{- end }}
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: client-config
+          mountPath: /etc/linstor
+        {{- if .Values.controller.ssl.enabled }}
+        - name: client-tls
+          mountPath: /tls/client
+        {{- end }}
+      serviceAccountName: {{ $fullName }}-controller
+      priorityClassName: system-node-critical
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ $fullName }}-configurator
+      - name: client-config
+        configMap:
+          name: {{ $fullName }}-client
+      {{- if .Values.controller.ssl.enabled }}
+      - name: client-tls
+        secret:
+          secretName: {{ $fullName }}-client-tls
+      {{- end }}
+{{- end }}
+

@@ -96,9 +96,6 @@ satellite:
   # usage-count=no and udev-always-use-vnr options by default
   overwriteDrbdConf: true
 
-  # Join the nodes automatically at init
-  autoJoinNodes: true
-
   # How many nodes can simultaneously download new image
   update:
     maxUnavailable: 40
@@ -110,6 +107,62 @@ satellite:
   #   - key: node-role.kubernetes.io/master
   #     operator: Exists
   #     effect: NoSchedule
+
+# ------------------------------------------------------------------------------
+# Linstor configuration script parameters. It enables automatic join nodes to
+# the cluster and allows you declaratively configure basic linstor entities.
+# ------------------------------------------------------------------------------
+configurator:
+  enabled: true
+
+  # Join the nodes automatically at init
+  autoJoinNodes: true
+
+  #controller:
+  #  props:
+  #    DrbdOptions/Net/csums-alg: crc32
+  #  resourceGroups:
+  #  - name: DfltRscGrp
+  #    props: {}
+  #    volumeGroups:
+  #    - volumeNumber: 0
+  #      props: {}
+  #    selectFilter:
+  #      PlaceCount: 2
+  #      StoragePoolList: ["lvm-thin"]
+  #      LayerStack:
+  #      - DRBD
+  #      - STORAGE
+
+  #nodes:
+  #- regex: ".*" # Regular expression to match node names
+  #  props:
+  #    Aux/aaa: bbb
+  #  interfaces:
+  #  - name: data
+  #    ip: 10.29.0.0/16 # specify subnet for additional interface on node
+  #  storagePools:
+  #  - name: DfltDisklessStorPool
+  #    providerKind: DISKLESS
+  #    props:
+  #      PrefNic: data
+  #  - name: lvm-thick
+  #    providerKind: LVM
+  #    props:
+  #      StorDriver/LvmVg: drbdpool
+  #  - name: lvm-thin
+  #    providerKind: LVM_THIN
+  #    props:
+  #      StorDriver/LvmVg: drbdpool
+  #      StorDriver/ThinPool: thinpool
+  #  - name: my-linstor-zpool
+  #    providerKind: ZFS
+  #    props:
+  #      StorDriver/ZPool: for-linstor
+  #  - name: my-linstor-zpool-thin
+  #    providerKind: ZFS_THIN
+  #    props:
+  #      StorDriver/ZPoolThin: for-linstor
 
 # ------------------------------------------------------------------------------
 # Linstor CSI driver provides compatibility level for adding Linstor support

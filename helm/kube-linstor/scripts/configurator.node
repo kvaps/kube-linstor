@@ -15,7 +15,7 @@ register_node
 if [[ $HOSTNAME =~ {{ required "A valid .Values.configurator.nodes[].regex entry required!" .regex }} ]]; then
   echo 'Handling configuration for "{{ .regex }}"'
   {{- with .props }}
-  configure_node_props {{ mustToJson . | quote }}
+  configure_node_props {{ toJson . | quote }}
   {{- end }}
   {{- range .interfaces }}
   configure_interface {{ required "A valid .Values.configurator.nodes[].interfaces[].name entry required!" .name | quote }} {{ required "A valid .Values.configurator.nodes[].interfaces[].ip entry required!" .ip | quote }}
@@ -32,7 +32,7 @@ if [[ $HOSTNAME =~ {{ required "A valid .Values.configurator.nodes[].regex entry
   if check_zfs_pool {{ index .props "StorDriver/ZPoolThin" }}; then
   {{- end }}
   {{- end }}
-  configure_storage_pool {{ required "A valid .Values.configurator.nodes[].storagePools[].name entry required!" .name | quote }} {{ required "A valid .Values.configurator.nodes[].storagePools[].providerKind entry required!" .providerKind | quote }} {{ mustToJson (.props | default (dict)) | quote }}
+  configure_storage_pool {{ required "A valid .Values.configurator.nodes[].storagePools[].name entry required!" .name | quote }} {{ required "A valid .Values.configurator.nodes[].storagePools[].providerKind entry required!" .providerKind | quote }} {{ toJson (.props | default (dict)) | quote }}
   {{- if has .providerKind (list "LVM" "LVM_THIN" "ZFS" "ZFS_THIN") }}
   fi
   {{- end }}

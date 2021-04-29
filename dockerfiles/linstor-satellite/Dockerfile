@@ -37,9 +37,10 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 RUN git checkout v${UTILS_VERSION} \
+ && install /dev/null /usr/local/bin/lbvers.py \
  && ./autogen.sh \
  && ./configure \
- && make debrelease \
+ && make debrelease VERSION=${UTILS_VERSION} \
  && mv drbd-utils-${UTILS_VERSION}.tar.gz ../drbd-utils_${UTILS_VERSION}.orig.tar.gz \
  && tar -C / -xvf ../drbd-utils_${UTILS_VERSION}.orig.tar.gz
 WORKDIR /drbd-utils-${UTILS_VERSION}

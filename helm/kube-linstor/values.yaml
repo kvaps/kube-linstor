@@ -7,7 +7,7 @@ controller:
   enabled: true
   image:
     repository: ghcr.io/kvaps/linstor-controller
-    tag: v1.11.1-2
+    tag: v1.12.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -80,7 +80,7 @@ satellite:
   enabled: true
   image:
     repository: ghcr.io/kvaps/linstor-satellite
-    tag: v1.11.1-2
+    tag: v1.12.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -176,7 +176,7 @@ csi:
       - name: regsecret
     linstorCsiPlugin:
       repository: ghcr.io/kvaps/linstor-csi
-      tag: v1.11.1-2
+      tag: v1.12.0
       pullPolicy: IfNotPresent
     csiProvisioner:
       repository: k8s.gcr.io/sig-storage/csi-provisioner
@@ -230,7 +230,7 @@ haController:
   enabled: true
   image:
     repository: ghcr.io/kvaps/linstor-ha-controller
-    tag: v1.11.1-2
+    tag: v1.12.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -255,7 +255,7 @@ stork:
   enabled: true
   image:
     repository: ghcr.io/kvaps/linstor-stork
-    tag: v1.11.1-2
+    tag: v1.12.0
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret

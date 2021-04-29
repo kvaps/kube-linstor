@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.11.1
+ARG VERSION=1.12.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -22,7 +22,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as utils-builder
 
-ARG UTILS_VERSION=9.16.0
+ARG UTILS_VERSION=9.17.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \

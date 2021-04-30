@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.12.0
+ARG VERSION=1.12.1
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -57,9 +57,9 @@ FROM golang:1.15 as k8s-await-election-builder
 
 RUN git clone https://github.com/LINBIT/k8s-await-election/ /usr/local/go/k8s-await-election/ \
  && cd /usr/local/go/k8s-await-election \
- && git reset --hard v0.2.3 \
+ && git reset --hard v0.2.4 \
  && make \
- && mv ./out/k8s-await-election /
+ && mv ./out/k8s-await-election-amd64 /k8s-await-election
 
 # ------------------------------------------------------------------------------
 

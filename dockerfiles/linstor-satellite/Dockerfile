@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.11.1
+ARG VERSION=1.12.2
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -22,7 +22,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as utils-builder
 
-ARG UTILS_VERSION=9.16.0
+ARG UTILS_VERSION=9.17.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -37,9 +37,10 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 RUN git checkout v${UTILS_VERSION} \
+ && install /dev/null /usr/local/bin/lbvers.py \
  && ./autogen.sh \
  && ./configure \
- && make debrelease \
+ && make debrelease VERSION=${UTILS_VERSION} \
  && mv drbd-utils-${UTILS_VERSION}.tar.gz ../drbd-utils_${UTILS_VERSION}.orig.tar.gz \
  && tar -C / -xvf ../drbd-utils_${UTILS_VERSION}.orig.tar.gz
 WORKDIR /drbd-utils-${UTILS_VERSION}

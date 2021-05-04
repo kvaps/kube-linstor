@@ -173,7 +173,7 @@ Then follow [official linstor documentation](https://www.linbit.com/drbd-user-gu
 - Kube-Linstor aims to be simple to operate, with less built-in logic for more straight-forward administration. To achieve this goal Kube-Linstor installs via a simple Helm chart, and installs primarily Kubernetes-native resources (Deployments, DaemonSets, etc).
 - Piraeus Operator relies heavily on a [Custom Resource Definition][k8s-crd]-driven approach to bootstrapping pieces of infrastructure like the [Linstor-Server][linstor-server] (satellites, etc) itself. With Piraeus Operator you create CRDs that manage the creation of Kubernetes-native resources
 - Kube-Linstor directly contains the Deployments, DaemonSets and other Kubernetes-native resources as necessary
-- Both Piraeus Operator and Kube-Linstor offer offers automatic configuration of nodes, storage pools and other LINSTOR-related resources. Where Piraeus Operator accomplishes this with CRDs, Piraeus Operator uses generated shell scripts via template helpers integrated into the Helm chart
+- Both Piraeus Operator and Kube-Linstor offer offers automatic configuration of nodes, storage pools and other LINSTOR-related resources. Where Piraeus Operator accomplishes this with CRDs, Kube-Linstor uses simple shell script with template helpers integrated into the Helm chart
 - Piraeus Operator offers automatic injection of the DRBD9 kernel module
 
 [piraeus-operator]: https://github.com/piraeusdatastore/piraeus-operator

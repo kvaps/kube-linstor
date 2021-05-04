@@ -44,7 +44,7 @@ Kube-Linstor consists of several components:
 [Install Helm](https://helm.sh/docs/intro/).
 
 > **_NOTE:_**
-> Commands below provided for Helm v3 but Helm v2 is also supported.  
+> Commands below provided for Helm v3 but Helm v2 is also supported.
 > You can use `helm template` instead of `helm install`, this is also working as well.
 
 Create `linstor` namespace.
@@ -164,17 +164,23 @@ Then follow [official linstor documentation](https://www.linbit.com/drbd-user-gu
 * [Perform backups and database management](docs/BACKUP.md)
 * [Upgrade notes](docs/UPGRADE.md)
 
-## How `kube-linstor` compares to other `drbd` on Kubernetes solutions
+## How Kube-Linstor compares to other DRBD-on-Kubernetes solutions
 
-### `piraeus-operator`
+### Piraeus Operator
 
-[`piraeus-operator`][piraeus-operator] is the operator that powers [Piraeus][piraeus], [LINBIT][linbit]'s official Software Defined Storage (SDS) solution for Kubernetes. The dependencies of `kube-linstor` and `piraeus-operator` are mostly shared, as both projects aim to create and administer LINSTOR clusters, but there are some differences in methodology and features:
+[Piraeus Operator][piraeus-operator] is the operator that powers [Piraeus][piraeus], [LINBIT][linbit]'s official Software Defined Storage (SDS) solution for Kubernetes. The dependencies of Kube-Linstor and Piraeus Operator are mostly shared, as both projects aim to create and administer LINSTOR clusters, but there are some differences in methodology and features:
 
-- `kube-linstor` aims to be simple and encourages installation via a simple Helm chart
-- `piraeus-operator` relies heavily on a [Custom Resource Definition][k8s-crd]-driven approach to bootstrapping pieces of infrastructure like the [`linstor-server`][linstor-server] (satellites, etc) itself. With `piraeus-operator` you create CRDs that manage the creation of Kubernetes-native resources.
-- `kube-linstor` directly contains the `DaemonSet`s and other Kubernetes-native resources as necessary.
-- `piraeus-operator` offers automatic (CRD-based) configuration of storage pools where possible
-- `piraeus-operator` offers automatic injection of the `drbd` kernel module
+- Kube-Linstor aims to be simple to operate, with less built-in logic for more straight-forward administration. To achieve this goal Kube-Linstor installs via a simple Helm chart, and installs primarily Kubernetes-native resources (Deployments, DaemonSets, etc).
+- Piraeus Operator relies heavily on a [Custom Resource Definition][k8s-crd]-driven approach to bootstrapping pieces of infrastructure like the [Linstor-Server][linstor-server] (satellites, etc) itself. With Piraeus Operator you create CRDs that manage the creation of Kubernetes-native resources
+- Kube-Linstor directly contains the Deployments, DaemonSets and other Kubernetes-native resources as necessary
+- Both Piraeus Operator and Kube-Linstor offer offers automatic configuration of nodes, storage pools and other LINSTOR-related resources. Where Piraeus Operator accomplishes this with CRDs, Piraeus Operator uses generated shell scripts via template helpers integrated into the Helm chart
+- Piraeus Operator offers automatic injection of the DRBD9 kernel module
+
+[piraeus-operator]: https://github.com/piraeusdatastore/piraeus-operator
+[piraeus]: https://piraeus.io/
+[linstor-server]: https://github.com/LINBIT/linstor-server
+[k8s-crd]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+[linbit]: https://linbit.com
 
 ## Licenses
 
@@ -188,8 +194,3 @@ Then follow [official linstor documentation](https://www.linbit.com/drbd-user-gu
 [drbd-utils]: https://github.com/LINBIT/drbd-utils/blob/master/COPYING
 [linstor-csi]: https://github.com/piraeusdatastore/linstor-csi/blob/master/LICENSE
 [stork]: https://github.com/libopenstorage/stork/blob/master/LICENSE
-[piraeus-operator]: https://github.com/piraeusdatastore/piraeus-operator
-[piraeus]: https://piraeus.io/
-[linstor-server]: https://github.com/LINBIT/linstor-server
-[k8s-crd]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
-[linbit]: https://linbit.com

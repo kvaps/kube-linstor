@@ -44,7 +44,7 @@ Kube-Linstor consists of several components:
 [Install Helm](https://helm.sh/docs/intro/).
 
 > **_NOTE:_**
-> Commands below provided for Helm v3 but Helm v2 is also supported.
+> Commands below provided for Helm v3 but Helm v2 is also supported.  
 > You can use `helm template` instead of `helm install`, this is also working as well.
 
 Create `linstor` namespace.

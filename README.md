@@ -164,6 +164,24 @@ Then follow [official linstor documentation](https://www.linbit.com/drbd-user-gu
 * [Perform backups and database management](docs/BACKUP.md)
 * [Upgrade notes](docs/UPGRADE.md)
 
+## How Kube-Linstor compares to other DRBD-on-Kubernetes solutions
+
+### Piraeus Operator
+
+[Piraeus Operator][piraeus-operator] is the operator that powers [Piraeus][piraeus], [LINBIT][linbit]'s official Software Defined Storage (SDS) solution for Kubernetes. The dependencies of Kube-Linstor and Piraeus Operator are mostly shared, as both projects aim to create and administer LINSTOR clusters, but there are some differences in methodology and features:
+
+- Kube-Linstor aims to be simple to operate, with less built-in logic for more straight-forward administration. To achieve this goal Kube-Linstor installs via a simple Helm chart, and installs primarily Kubernetes-native resources (Deployments, DaemonSets, etc).
+- Piraeus Operator relies heavily on a [Custom Resource Definition][k8s-crd]-driven approach to bootstrapping pieces of infrastructure like the [Linstor-Server][linstor-server] (satellites, etc) itself. With Piraeus Operator you create CRDs that manage the creation of Kubernetes-native resources
+- Kube-Linstor directly contains the Deployments, DaemonSets and other Kubernetes-native resources as necessary
+- Both Piraeus Operator and Kube-Linstor offer offers automatic configuration of nodes, storage pools and other LINSTOR-related resources. Where Piraeus Operator accomplishes this with CRDs, Kube-Linstor uses simple shell script with template helpers integrated into the Helm chart
+- Piraeus Operator offers automatic DRBD9 Kernel Module Injection Image. Kube-Linstor expects the DRBD9 kernel module to pre-installed on all nodes.
+
+[piraeus-operator]: https://github.com/piraeusdatastore/piraeus-operator
+[piraeus]: https://piraeus.io/
+[linstor-server]: https://github.com/LINBIT/linstor-server
+[k8s-crd]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+[linbit]: https://linbit.com
+
 ## Licenses
 
 * **[This project](LICENSE)** under **Apache License**

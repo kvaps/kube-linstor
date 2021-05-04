@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.12.1
+ARG VERSION=1.12.2
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -12,6 +12,7 @@ WORKDIR /linstor-server
 RUN git checkout v${VERSION}
 
 RUN make debrelease \
+ && rm -rf /root/.gradle/caches/ \
  && mv linstor-server-${VERSION}.tar.gz /linstor-server_${VERSION}.orig.tar.gz \
  && tar -C / -xvf /linstor-server_${VERSION}.orig.tar.gz
 

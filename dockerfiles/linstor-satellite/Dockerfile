@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.12.1
+ARG VERSION=1.12.2
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \

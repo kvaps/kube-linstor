@@ -14,7 +14,7 @@ Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
 [linstor-controller]: dockerfiles/linstor-controller/Dockerfile
 [linstor-controller-version]: https://img.shields.io/docker/v/kvaps/linstor-controller.svg?sort=semver
-[linstor-satellite]: dockerfiles/linstor-controller/Dockerfile
+[linstor-satellite]: dockerfiles/linstor-satellite/Dockerfile
 [linstor-satellite-version]: https://img.shields.io/docker/v/kvaps/linstor-satellite.svg?sort=semver
 [linstor-csi]: dockerfiles/linstor-csi/Dockerfile
 [linstor-csi-version]: https://img.shields.io/docker/v/kvaps/linstor-csi.svg?sort=semver

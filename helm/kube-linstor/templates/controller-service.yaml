@@ -6,6 +6,11 @@ kind: Service
 metadata:
   name: {{ $fullName }}-controller
   namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ $fullName }}-controller
+    {{- with .Values.controller.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.controller.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

@@ -6,6 +6,15 @@ kind: Service
 metadata:
   name: {{ $fullName }}-stork
   namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ $fullName }}-stork
+    {{- with .Values.stork.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.stork.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   ports:
     - name: extender

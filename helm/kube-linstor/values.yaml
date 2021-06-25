@@ -24,6 +24,7 @@ controller:
   #hostNetwork: true
 
   service:
+    labels: {}
     annotations:
       prometheus.io/path: "/metrics?error_reports=false"
       prometheus.io/port: "3370"
@@ -261,6 +262,10 @@ stork:
       - name: regsecret
 
   replicaCount: 2
+
+  service:
+    labels: {}
+    annotations: {}
 
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""

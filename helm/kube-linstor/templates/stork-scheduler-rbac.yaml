@@ -58,6 +58,9 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "create", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csidrivers", "csistoragecapacities"]
+    verbs: ["get", "list", "watch"]
   {{- if .Values.podSecurityPolicy.enabled }}
   - apiGroups: ["extensions"]
     resources: ["podsecuritypolicies"]

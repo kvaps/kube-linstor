@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.12.5
+ARG VERSION=1.13.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -23,8 +23,8 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as client-builder
 
-ARG API_VERSION=1.7.3
-ARG CLIENT_VERSION=1.7.3
+ARG API_VERSION=1.8.0
+ARG CLIENT_VERSION=1.8.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \

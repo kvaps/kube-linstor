@@ -1,5 +1,5 @@
 {{- $fullName := include "linstor.fullname" . -}}
-{{- if .Values.satellite.reactor.enabled }}
+{{- if .Values.reactor.enabled }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -9,11 +9,11 @@ metadata:
 data:
   drbd-reactor.toml: |+
     snippets = "/etc/drbd-reactor.d"
-    statistics-poll-interval = {{ .Values.satellite.reactor.pollInterval }}
+    statistics-poll-interval = {{ .Values.reactor.pollInterval }}
     [[log]]
     level = "info"
-    file = "{{ .Values.satellite.reactor.logFile }}"
+    file = "{{ .Values.reactor.logFile }}"
     [[prometheus]]
     enums = true
-    address = "0.0.0.0:{{ .Values.satellite.reactor.port }}"
+    address = "0.0.0.0:{{ .Values.reactor.port }}"
 {{- end }}

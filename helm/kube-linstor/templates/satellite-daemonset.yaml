@@ -131,7 +131,7 @@ spec:
           mountPath: /run/lvm
         - name: run-udev
           mountPath: /run/udev
-      {{- if .Values.satellite.reactor.enabled }}
+      {{- if .Values.reactor.enabled }}
       - name: drbd-reactor
       {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
@@ -140,7 +140,7 @@ spec:
         securityContext:
           privileged: true
         ports:
-        - containerPort: {{ .Values.satellite.reactor.port }}
+        - containerPort: {{ .Values.reactor.port }}
           name: metrics
           protocol: TCP
         command:
@@ -308,7 +308,7 @@ spec:
       - name: run-udev
         hostPath:
           path: /run/udev
-      {{- if .Values.satellite.reactor.enabled }}
+      {{- if .Values.reactor.enabled }}
       - name: drbd-reactor-config
         configMap:
           name: {{ $fullName }}-drbd-reactor

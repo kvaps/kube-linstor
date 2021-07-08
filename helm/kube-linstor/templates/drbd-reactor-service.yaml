@@ -1,5 +1,5 @@
 {{- $fullName := include "linstor.fullname" . -}}
-{{- if .Values.satellite.reactor.enabled }}
+{{- if .Values.reactor.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -8,10 +8,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ $fullName }}-drbd-reactor
-    {{- with .Values.satellite.reactor.service.labels }}
+    {{- with .Values.reactor.service.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.satellite.reactor.service.annotations }}
+  {{- with .Values.reactor.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

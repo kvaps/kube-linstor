@@ -19,7 +19,7 @@ spec:
   clusterIP: None
   ports:
   - name: metrics
-    port: 9942
+    port: {{ .Values.reactor.port }}
   selector:
     app: {{ $fullName }}-satellite
 {{- end }}

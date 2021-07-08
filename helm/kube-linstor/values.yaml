@@ -110,6 +110,12 @@ satellite:
       pullPolicy: IfNotPresent
       pullSecrets:
         - name: regsecret
+    service:
+      labels: {}
+      annotations:
+        prometheus.io/path: "/"
+        prometheus.io/port: "9942"
+        prometheus.io/scrape: "true"
 
   # nodeSelector:
   #   linstor-satellite: ""

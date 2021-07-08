@@ -1,0 +1,22 @@
+{{- $fullName := include "linstor.fullname" . -}}
+{{- if .Values.satellite.monitoring.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-drbd-reactor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ $fullName }}-drbd-reactor
+    {{- with .Values.controller.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.satellite.monitoring.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ports:
+  - name: metrics
+    port: 9942
+{{- end }}

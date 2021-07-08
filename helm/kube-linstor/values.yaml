@@ -101,6 +101,21 @@ satellite:
   update:
     maxUnavailable: 40
 
+# ------------------------------------------------------------------------------
+# drbd-reactor is a optional component that performs DRBD events processing.
+# It serves a prometheus compatible endpoint and exposing various DRBD metrics.
+# ------------------------------------------------------------------------------
+reactor: 
+  enabled: true
+  port: 9942
+  pollInterval: 60
+  service:
+    labels: {}
+    annotations:
+      prometheus.io/path: "/"
+      prometheus.io/port: "9942"
+      prometheus.io/scrape: "true"
+
   # nodeSelector:
   #   linstor-satellite: ""
   

@@ -59,10 +59,32 @@ RUN dpkg-buildpackage -us -uc
 
 # ------------------------------------------------------------------------------
 
+FROM debian:buster as reactor-builder
+
+ARG REACTOR_VERSION=0.4.0
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \
+ && apt-get -y upgrade \
+ && apt-get -y install build-essential debhelper git cargo rustc dh-python
+
+RUN git clone --recurse-submodules https://github.com/LINBIT/drbd-reactor /drbd-reactor
+WORKDIR /drbd-reactor
+RUN git checkout v${REACTOR_VERSION} \
+ && install /dev/null /usr/local/bin/lbvers.py \
+ && make debrelease VERSION=${REACTOR_VERSION} \
+ && mv drbd-reactor-${REACTOR_VERSION}.tar.gz ../drbd-reactor_${REACTOR_VERSION}.orig.tar.gz \
+ && tar -C / -xvf ../drbd-reactor_${REACTOR_VERSION}.orig.tar.gz
+WORKDIR /drbd-reactor-${REACTOR_VERSION}
+RUN dpkg-buildpackage -us -uc
+
+# ------------------------------------------------------------------------------
+
 FROM debian:buster
 
 COPY --from=builder /linstor-common_*_all.deb /linstor-satellite_*_all.deb /packages/
 COPY --from=utils-builder /python-linstor_*_all.deb /drbd-utils_*_amd64.deb /thin-send-recv_*_amd64.deb /packages/
+COPY --from=reactor-builder /drbd-reactor_*_amd64.deb /packages/
 
 # Install repos and system upgrade
 ENV DEBIAN_FRONTEND noninteractive
@@ -73,7 +95,7 @@ RUN apt-get -y update \
 
 # Install linstor-satellite
 RUN apt-get update \
- && apt-get install -y default-jre-headless thin-provisioning-tools \
+ && apt-get install -y default-jre-headless thin-provisioning-tools python3-toml \
  && dpkg -i packages/*.deb \
  && sed -i "s|'$| \"-Djdk.tls.acknowledgeCloseNotify=true\"'|" \
       /usr/share/linstor-server/bin/Satellite \

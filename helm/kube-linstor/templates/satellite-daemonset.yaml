@@ -131,7 +131,15 @@ spec:
           mountPath: /run/lvm
         - name: run-udev
           mountPath: /run/udev
-      {{- if .Values.configurator.enabled }}
+      {{- if .Values.satellite.monitoring.enabled }}
+      - name: drbd-reactor
+      {{- with .Values.satellite.monitoring.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .pullPolicy }}
+        {{- end }}
+        securityContext:
+          privileged: true
+      {{- end }}
       - name: configurator
         {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
@@ -182,6 +190,7 @@ spec:
           mountPath: /config/ssl
           readOnly: true
         {{- end }}
+        {{- if .Values.configurator.enabled }}
         - name: etc-drbd-conf
           mountPath: /etc/drbd.conf
         - name: etc-drbd-d

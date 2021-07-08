@@ -101,6 +101,15 @@ satellite:
   update:
     maxUnavailable: 40
 
+  # If monitoring=true, than drbd-reactor https://github.com/LINBIT/drbd-reactor will be installed
+  monitoring: true
+    image:
+      repository: ghcr.io/krakazyabra/kube-linstor/drbd-reactor
+      tag: 0.4.0
+      pullPolicy: IfNotPresent
+      pullSecrets:
+      - name: regsecret
+
   # nodeSelector:
   #   linstor-satellite: ""
   

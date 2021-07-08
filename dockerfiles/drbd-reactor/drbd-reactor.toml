@@ -1,0 +1,75 @@
+##########################
+## GLOBAL CONFIGURATION ##
+##########################
+
+# Extra configuration snippets
+# Path names in this directory matching *.toml get alphabetically sorted and appended to this configuration
+# If the path does not exist, or is not a directory, or is not absolute this setting is ingnored
+# IMPORTANT: this path gets path-joined with "*.toml" and the result is then subject to glob expansion
+snippets = "/etc/drbd-reactor.d"
+
+# DRBD statistcs (bytes written, out-of-sync,...) are recalculated every given seconds.
+# Note that this applies to statistics only, main events like resource/disk/connection states get updated
+# whenever such an event occurs. The default should be fine for most situations, but if you decide for very
+# fast updates in for example your Prometheus setup, you might want to decrease that interval as well.
+statistics-poll-interval = 60
+
+#######################
+## LOG CONFIGURATION ##
+#######################
+
+# If not configured, defaults to "info" level on stdout/stderr
+[[log]]
+## debugger plugin needs debug log level, default is "info"
+# level = "info" # trace, debug, info, warn, error, off
+## Path to a log file
+# file = "/var/log/drbd-reactor.log"
+
+########################################
+## PLUGIN CONFIGURATION DOCUMENTATION ##
+########################################
+# IMPORTANT: This is for documentation only!
+# Plugins should be stored in the "snippets" directory
+# use "drbd-reactorctl edit" to create and edit such snippets
+
+## Enable the debugger
+# [[debugger]]
+
+# Configure a promoter
+# [[promoter]]
+## Specify which resource should be watched. For example resource 'foo':
+# [promoter.resources.foo]
+## what should be used to execute services. systemd is the default.
+## 'shell' should only be used on non systemd/Windows systems.
+# runner = "systemd"
+## if the runner is systemd, generate inter service dependencies as this:
+# dependencies-as = "Requires"
+## if the runner is systemd, generate service dependencies in the final target unit as this:
+# target-as = "Requires"
+## What should be started when the resource is promotable.
+## the promoter assumes the item is a systemd unit if the runner is "systemd" (the default)
+## if the runner is "shell", the start list is exected via a shell (e.g., sh -c).
+# start = ["foo.mount", "foo.service"]
+## if unset/empty, services from 'start' will be stopped in reverse order if the runner is "shell".
+## if the runner is "systemd", it always starts and stops the auto-generated implicit target unit.
+# stop = []
+## shell one-liner executed in a loop if a stop action fails
+## if unset, this defaults to "true"
+# on-stop-failure =  "echo b > /proc/sysrq-trigger"
+
+# Configure a user mode helper filter
+# [[umh]]
+## Filter type
+# [[umh.resource]]
+# command = "drbd-reactor-role-change.sh"
+# event-type = "Change"
+## everything not Primary
+# old.role = { operator = "NotEquals", value = "Primary" }
+# new.role = "Primary"
+
+# Configure a prometheus exporter
+[[prometheus]]
+## generate enum types which generates considerably more data, defaults to false
+enums = false
+## address and port combination, 9942 is the registered port for that exporter
+address = "0.0.0.0:9942"

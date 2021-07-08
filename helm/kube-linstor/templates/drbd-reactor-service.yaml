@@ -16,7 +16,10 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  clusterIP: None
   ports:
   - name: metrics
     port: 9942
+  selector:
+    app: {{ $fullName }}-satellite
 {{- end }}

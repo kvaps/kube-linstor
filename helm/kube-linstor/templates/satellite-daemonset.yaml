@@ -139,6 +139,10 @@ spec:
         {{- end }}
         securityContext:
           privileged: true
+        ports:
+        - containerPort: 9942
+          name: metrics
+          protocol: TCP
       {{- end }}
       - name: configurator
         {{- with .Values.satellite.image }}

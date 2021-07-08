@@ -131,18 +131,24 @@ spec:
           mountPath: /run/lvm
         - name: run-udev
           mountPath: /run/udev
-      {{- if .Values.satellite.monitoring.enabled }}
+      {{- if .Values.satellite.reactor.enabled }}
       - name: drbd-reactor
-      {{- with .Values.satellite.monitoring.image }}
+      {{- with .Values.satellite.image }}
         image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
         imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         securityContext:
           privileged: true
         ports:
-        - containerPort: 9942
+        - containerPort: {{ .Values.satellite.reactor.port }}
           name: metrics
           protocol: TCP
+        command:
+        - /usr/sbin/drbd-reactor
+        volumeMounts:
+        - name: drbd-reactor-config
+          mountPath: /etc/drbd-reactor.toml
+          subPath: drbd-reactor.toml
       {{- end }}
       - name: configurator
         {{- with .Values.satellite.image }}
@@ -302,6 +308,11 @@ spec:
       - name: run-udev
         hostPath:
           path: /run/udev
+      {{- if .Values.satellite.reactor.enabled }}
+      - name: drbd-reactor-config
+        configMap:
+          name: {{ $fullName }}-drbd-reactor
+      {{- end}}
   updateStrategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.satellite.update.maxUnavailable }}

@@ -18,8 +18,7 @@ RUN cd /tmp && wget https://pkg.linbit.com/downloads/drbd/utils/${DRBD_REACTOR_T
 # =lbbuild USER makepkg
 RUN cd /tmp && tar xvf ${DRBD_REACTOR_TGZ} && cd ${DRBD_REACTOR_TGZNAME}-${DRBD_REACTOR_VERSION} && \
 	. $HOME/.cargo/env; cargo install --path . && \
-	cp $HOME/.cargo/bin/drbd-reactor /tmp && \
-	cp ./example/drbd-reactor.toml /tmp
+	cp $HOME/.cargo/bin/drbd-reactor /tmp
 
 FROM quay.io/linbit/drbd-utils
 MAINTAINER Roland Kammerer <roland.kammerer@linbit.com>
@@ -35,7 +34,7 @@ LABEL	name="drbd-reactor" \
 	description="DRBD events reaction via plugins"
 
 COPY --from=builder /tmp/drbd-reactor /usr/sbin
-COPY --from=builder /tmp/drbd-reactor.toml /etc
+COPY drbd-reactor.toml /etc
 
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical && \
 	yum clean all -y

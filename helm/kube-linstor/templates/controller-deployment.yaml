@@ -24,6 +24,29 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml .Values.controller.image.pullSecrets | nindent 8 }}
+      {{- if or .Values.controller.affinity .Values.controller.podAntiAffinity }}
+      affinity:
+        {{- with .Values.controller.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.controller.podAntiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "{{ .Values.controller.podAntiAffinityTopologyKey }}"
+              labelSelector:
+                matchLabels:
+                  app: {{ $fullName }}-controller
+        {{- else if eq .Values.controller.podAntiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "{{ .Values.controller.podAntiAffinityTopologyKey }}"
+                labelSelector:
+                  matchLabels:
+                    app: {{ $fullName }}-controller
+        {{- end }}
+      {{- end }}
       {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled .Values.controller.initSettings.enabled }}
       initContainers:
       {{- if or .Values.controller.ssl.enabled .Values.satellite.ssl.enabled }}

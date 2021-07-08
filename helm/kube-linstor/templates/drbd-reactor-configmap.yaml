@@ -12,7 +12,7 @@ data:
     statistics-poll-interval = {{ .Values.reactor.pollInterval }}
     [[log]]
     level = "info"
-    file = "{{ .Values.reactor.logFile }}"
+    file = "/dev/stdout"
     [[prometheus]]
     enums = true
     address = "0.0.0.0:{{ .Values.reactor.port }}"

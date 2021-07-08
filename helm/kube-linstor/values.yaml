@@ -109,7 +109,6 @@ reactor:
   enabled: true
   port: 9942
   pollInterval: 60
-  logFile: /dev/stdout
   service:
     labels: {}
     annotations:

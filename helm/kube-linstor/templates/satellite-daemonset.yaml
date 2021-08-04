@@ -70,6 +70,8 @@ spec:
           mountPath: /etc/drbd.d
         - name: usr-local-sbin
           mountPath: /host-bin
+        - name: logs
+          mountPath: /logs
       {{- end }}
       {{- end }}
       containers:

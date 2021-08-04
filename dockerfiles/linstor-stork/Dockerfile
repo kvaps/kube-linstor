@@ -9,7 +9,6 @@ RUN git clone https://github.com/libopenstorage/stork /go/src/github.com/libopen
  && cd /go/src/github.com/libopenstorage/stork \
  && git reset --hard v2.6.4
 
-RUN GO111MODULE=on go get -u -d github.com/libopenstorage/stork@v2.6.4
 WORKDIR /go/src/github.com/libopenstorage/stork
 
 RUN make vendor

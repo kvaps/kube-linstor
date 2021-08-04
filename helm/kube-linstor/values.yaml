@@ -13,6 +13,9 @@ controller:
       - name: regsecret
 
   replicaCount: 2
+  podAntiAffinity: soft
+  podAntiAffinityTopologyKey: kubernetes.io/hostname
+  affinity: {}
 
   port: 3370
   ssl:
@@ -221,6 +224,9 @@ csi:
 
   controller:
     replicaCount: 2
+    podAntiAffinity: soft
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    affinity: {}
 
     csiProvisioner:
       topology: false
@@ -252,6 +258,9 @@ haController:
       - name: regsecret
 
   replicaCount: 2
+  podAntiAffinity: soft
+  podAntiAffinityTopologyKey: kubernetes.io/hostname
+  affinity: {}
 
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""
@@ -277,6 +286,9 @@ stork:
       - name: regsecret
 
   replicaCount: 2
+  podAntiAffinity: soft
+  podAntiAffinityTopologyKey: kubernetes.io/hostname
+  affinity: {}
 
   service:
     labels: {}
@@ -300,6 +312,9 @@ storkScheduler:
       - name: regsecret
 
   replicaCount: 2
+  podAntiAffinity: soft
+  podAntiAffinityTopologyKey: kubernetes.io/hostname
+  affinity: {}
 
   # nodeSelector:
   #   node-role.kubernetes.io/master: ""

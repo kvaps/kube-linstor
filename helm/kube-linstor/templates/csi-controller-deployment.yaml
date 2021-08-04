@@ -166,6 +166,29 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
       imagePullSecrets:
         {{- toYaml .Values.csi.image.pullSecrets | nindent 8 }}
+      {{- if or .Values.csi.controller.affinity .Values.csi.controller.podAntiAffinity }}
+      affinity:
+        {{- with .Values.csi.controller.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.csi.controller.podAntiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "{{ .Values.csi.controller.podAntiAffinityTopologyKey }}"
+              labelSelector:
+                matchLabels:
+                  app: {{ $fullName }}-controller
+        {{- else if eq .Values.csi.controller.podAntiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "{{ .Values.csi.controller.podAntiAffinityTopologyKey }}"
+                labelSelector:
+                  matchLabels:
+                    app: {{ $fullName }}-controller
+        {{- end }}
+      {{- end }}
       {{- with .Values.csi.controller.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

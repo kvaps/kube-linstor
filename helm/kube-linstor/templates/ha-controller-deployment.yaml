@@ -20,6 +20,29 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml .Values.haController.image.pullSecrets | nindent 8 }}
+      {{- if or .Values.haController.affinity .Values.haController.podAntiAffinity }}
+      affinity:
+        {{- with .Values.haController.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.haController.podAntiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "{{ .Values.haController.podAntiAffinityTopologyKey }}"
+              labelSelector:
+                matchLabels:
+                  app: {{ $fullName }}-controller
+        {{- else if eq .Values.haController.podAntiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "{{ .Values.haController.podAntiAffinityTopologyKey }}"
+                labelSelector:
+                  matchLabels:
+                    app: {{ $fullName }}-controller
+        {{- end }}
+      {{- end }}
       containers:
       - name: linstor-ha-controller
         {{- with .Values.haController.image }}

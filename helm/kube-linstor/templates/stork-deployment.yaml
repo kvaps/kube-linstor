@@ -20,6 +20,29 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml .Values.stork.image.pullSecrets | nindent 8 }}
+      {{- if or .Values.stork.affinity .Values.stork.podAntiAffinity }}
+      affinity:
+        {{- with .Values.stork.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if eq .Values.stork.podAntiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "{{ .Values.stork.podAntiAffinityTopologyKey }}"
+              labelSelector:
+                matchLabels:
+                  app: {{ $fullName }}-controller
+        {{- else if eq .Values.stork.podAntiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "{{ .Values.stork.podAntiAffinityTopologyKey }}"
+                labelSelector:
+                  matchLabels:
+                    app: {{ $fullName }}-controller
+        {{- end }}
+      {{- end }}
       containers:
       - name: stork
         image: {{ .Values.stork.image.repository }}:{{ .Values.stork.image.tag }}

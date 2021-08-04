@@ -1,6 +1,6 @@
 FROM debian:buster as builder
 
-ARG VERSION=1.13.0
+ARG VERSION=1.14.0
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -23,7 +23,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as utils-builder
 
-ARG UTILS_VERSION=9.18.0
+ARG UTILS_VERSION=9.18.2
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -61,7 +61,7 @@ RUN dpkg-buildpackage -us -uc
 
 FROM debian:buster as reactor-builder
 
-ARG REACTOR_VERSION=0.4.0
+ARG REACTOR_VERSION=0.4.3
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \

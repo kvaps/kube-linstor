@@ -2,7 +2,7 @@ FROM golang:1.15 as builder
 
 RUN git clone https://github.com/linbit/linstor-csi/ /usr/local/go/linstor-csi/ \
  && cd /usr/local/go/linstor-csi \
- && git reset --hard v0.13.0 \
+ && git reset --hard v0.13.1 \
  && make -f container.mk staticrelease \
  && mv ./linstor-csi-linux-amd64 /
 

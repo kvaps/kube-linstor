@@ -36,7 +36,7 @@ metadata:
     "directives.qbec.io/update-policy": "never"
 type: kubernetes.io/tls
 data:
-  {{- with genSignedCert $cn nil nil 3650 $ca }}
+  {{- with genSignedCert (printf "%s-client" $fullName) nil nil 3650 $ca }}
   tls.crt: {{ b64enc .Cert }}
   tls.key: {{ b64enc .Key }}
   ca.crt: {{ b64enc $ca.Cert }}
@@ -72,7 +72,7 @@ metadata:
   name: {{ $fullName }}-client-tls
 spec:
   secretName: {{ $fullName }}-client-tls
-  commonName: {{ $cn }}
+  commonName: {{ $fullName }}-client
   duration: 87600h # 3650d
   usages:
   - "signing"

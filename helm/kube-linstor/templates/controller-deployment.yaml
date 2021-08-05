@@ -64,7 +64,7 @@ spec:
           rm -f /config/ssl/keystore.jks /config/ssl/certificates.jks /config/ssl/trustore_client.jks
           keytool -importkeystore -srcstorepass linstor -deststorepass linstor -keypass linstor -srckeystore "$tmp" -destkeystore /config/ssl/keystore.jks
           {{- if .Values.controller.ssl.enabled }}
-          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/tls.crt -alias linstor-client -destkeystore /config/ssl/trustore_client.jks
+          keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/client/ca.crt -alias linstor-ca -destkeystore /config/ssl/trustore_client.jks
           {{- end }}
           {{- if .Values.satellite.ssl.enabled }}
           keytool -importcert -noprompt -deststorepass linstor -keypass linstor -file /tls/satellite/tls.crt -alias linstor-satellite -destkeystore /config/ssl/certificates.jks

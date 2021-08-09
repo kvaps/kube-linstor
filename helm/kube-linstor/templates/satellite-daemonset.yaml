@@ -160,6 +160,18 @@ spec:
         command:
         - /bin/bash
         - /scripts/configurator.node
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+               cn() { curl -sS {{ if .Values.controller.ssl.enabled }}--cacert /tls/client/ca.crt --cert /tls/client/tls.crt --key /tls/client/tls.key{{ end }} -X $1 $LS_CONTROLLERS/v1/nodes/$NODE_NAME$2; }
+               ! cn GET | grep -q '"connection_status":"OFFLINE"' || cn PUT /reconnect
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
         env:
         - name: LS_CONTROLLERS
         {{- if not .Values.controller.ssl.enabled }}

@@ -2,6 +2,14 @@
 
 Containerized Linstor Storage easy to run in your Kubernetes cluster.
 
+> :warning: **This project currently unmaintained**
+> 
+> I decided join forces over creation the union solution for running LINSTOR on Kubenretes, and contribute missing features of this chart to upstream project: [piraeus-operator](https://github.com/piraeusdatastore/piraeus-operator).
+> 
+> If you want to upgrade, you can easily switch between them, see https://github.com/kvaps/kube-linstor/issues/53#issuecomment-1028006151 for more details.
+>
+> Dockefiles continue maintaining in [Deckhouse](https://github.com/deckhouse/deckhouse/tree/main/modules/031-linstor/images) project.
+
 ## Images
 
 | Image                            | Latest Tag                                                                               |
